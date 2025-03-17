@@ -4,7 +4,6 @@
 //
 //  Created by Anastasiia on 26.02.2025.
 //
-
 import UIKit
 
 final class TrackerTypesController: UIViewController {
@@ -16,7 +15,7 @@ final class TrackerTypesController: UIViewController {
         let MakeTracker = UILabel()
         MakeTracker.textColor = .black
         MakeTracker.text = "Создание трекера"
-        MakeTracker.font = .boldSystemFont(ofSize: 16)
+        MakeTracker.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         MakeTracker.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(MakeTracker)
         
@@ -31,6 +30,7 @@ final class TrackerTypesController: UIViewController {
         buttonHabit.setTitleColor(.white, for: .normal)
         buttonHabit.backgroundColor = .black
         buttonHabit.layer.cornerRadius = 16
+        
         buttonHabit.translatesAutoresizingMaskIntoConstraints = false
         buttonHabit.addTarget(self, action: #selector(didTapHabitButton), for: .touchUpInside)
         
@@ -49,6 +49,7 @@ final class TrackerTypesController: UIViewController {
         buttonIrregularEvent.setTitleColor(.white, for: .normal)
         buttonIrregularEvent.backgroundColor = .black
         buttonIrregularEvent.layer.cornerRadius = 16
+        
         buttonIrregularEvent.translatesAutoresizingMaskIntoConstraints = false
         buttonIrregularEvent.addTarget(self, action: #selector(didTapIrregularEventButton), for: .touchUpInside)
         

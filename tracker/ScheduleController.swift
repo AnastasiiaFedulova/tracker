@@ -5,10 +5,16 @@
 //  Created by Anastasiia on 28.02.2025.
 //
 
-import Foundation
 import UIKit
 
+protocol ScheduleControllerDelegate: AnyObject {
+    func didSelectSchedule(_ days: [Weekday])
+}
+
 final class ScheduleController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+    let sceduleService = SceduleService.shared
+    
+    weak var delegate: ScheduleControllerDelegate?
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         tableData[section].count
     }
@@ -32,6 +38,7 @@ final class ScheduleController: UIViewController, UITableViewDataSource, UITable
     
     private let tableView = UITableView()
     private let tableData = [["Понедельник"], ["Вторник"], ["Среда"], ["Четверг"], ["Пятница"], ["Суббота"], ["Воскресенье"]]
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -78,7 +85,7 @@ final class ScheduleController: UIViewController, UITableViewDataSource, UITable
         doneButton.backgroundColor = .black
         doneButton.layer.cornerRadius = 16
         doneButton.translatesAutoresizingMaskIntoConstraints = false
-        doneButton.addTarget(self, action: #selector(didTapdoneButton), for: .touchUpInside)
+        doneButton.addTarget(self, action: #selector(didTapDoneButton), for: .touchUpInside)
         
         view.addSubview(doneButton)
         
@@ -97,11 +104,26 @@ final class ScheduleController: UIViewController, UITableViewDataSource, UITable
     @objc private func switchChanged(_ sender: UISwitch) {
         if let cell = sender.superview as? UITableViewCell,
            let indexPath = tableView.indexPath(for: cell) {
-            print("Свитчер изменён в ячейке: \(tableData[indexPath.section][indexPath.row]), состояние: \(sender.isOn)")
-            sender.onTintColor = .blue
+            let day = tableData[indexPath.section][indexPath.row]
+            
+            if sender.isOn {
+                if let weekday = Weekday(rawValue: day) {
+                    sceduleService.selectedWeekdays.append(weekday)
+                    print(sceduleService.selectedWeekdays)
+                }
+            } else {
+                if let weekday = Weekday(rawValue: day),
+                   let index = sceduleService.selectedWeekdays.firstIndex(of: weekday) {
+                    sceduleService.selectedWeekdays.remove(at: index)
+                }
+            }
         }
     }
-    @objc private func didTapdoneButton(_ sender: UISwitch) {
+    
+    @objc private func didTapDoneButton() {
+        let selectedWeekdays = sceduleService.selectedWeekdays.compactMap { Weekday(rawValue: $0.rawValue) }
+        delegate?.didSelectSchedule(selectedWeekdays)
         dismiss(animated: true)
     }
 }
+

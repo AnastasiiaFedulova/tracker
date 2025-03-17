@@ -5,7 +5,6 @@
 //  Created by Anastasiia on 02.03.2025.
 //
 
-import Foundation
 import UIKit
 
 final class EditCategoriesController: UIViewController, UITextFieldDelegate {
@@ -75,7 +74,7 @@ final class EditCategoriesController: UIViewController, UITextFieldDelegate {
     }
     
     @objc func didTapdoneButton() {
-        var newName = name.text ?? ""
+        let newName = name.text ?? ""
         
         if let oldName = categoriesName {
             categoriesServise.updateName(oldName: oldName, newName: newName)
@@ -111,6 +110,4 @@ final class EditCategoriesController: UIViewController, UITextFieldDelegate {
         name.rightViewMode = .whileEditing
         clearButton.isHidden = true
     }
-    
-    
 }

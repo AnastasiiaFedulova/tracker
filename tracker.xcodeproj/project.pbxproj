@@ -21,6 +21,7 @@
 		5562A08E2D7214B4000AB266 /* CreateCategoriesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5562A08D2D7214B4000AB266 /* CreateCategoriesController.swift */; };
 		5562A0902D7225D1000AB266 /* CategoriesServise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5562A08F2D7225D1000AB266 /* CategoriesServise.swift */; };
 		5562A0922D74B875000AB266 /* EditCategoriesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5562A0912D74B875000AB266 /* EditCategoriesController.swift */; };
+		5562A09A2D85FFCD000AB266 /* SceduleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5562A0992D85FFCD000AB266 /* SceduleService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +41,7 @@
 		5562A08D2D7214B4000AB266 /* CreateCategoriesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateCategoriesController.swift; sourceTree = "<group>"; };
 		5562A08F2D7225D1000AB266 /* CategoriesServise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoriesServise.swift; sourceTree = "<group>"; };
 		5562A0912D74B875000AB266 /* EditCategoriesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditCategoriesController.swift; sourceTree = "<group>"; };
+		5562A0992D85FFCD000AB266 /* SceduleService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceduleService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,6 +86,7 @@
 				5562A0892D71F138000AB266 /* CategoriesController.swift */,
 				5562A0912D74B875000AB266 /* EditCategoriesController.swift */,
 				5562A0812D6F86B7000AB266 /* TrackerStructures.swift */,
+				5562A0992D85FFCD000AB266 /* SceduleService.swift */,
 				5562A0742D6F835A000AB266 /* Assets.xcassets */,
 				5562A0762D6F835A000AB266 /* LaunchScreen.storyboard */,
 				5562A0792D6F835A000AB266 /* Info.plist */,
@@ -171,6 +174,7 @@
 				5562A0842D6F89B1000AB266 /* TrackerTypesController.swift in Sources */,
 				5562A06C2D6F8359000AB266 /* AppDelegate.swift in Sources */,
 				5562A0822D6F86B7000AB266 /* TrackerStructures.swift in Sources */,
+				5562A09A2D85FFCD000AB266 /* SceduleService.swift in Sources */,
 				5562A06E2D6F8359000AB266 /* SceneDelegate.swift in Sources */,
 				5562A08A2D71F138000AB266 /* CategoriesController.swift in Sources */,
 			);

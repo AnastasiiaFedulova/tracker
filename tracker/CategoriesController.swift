@@ -5,13 +5,15 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
     
     let categoriesServise = CategoriesServise.shared
     
+    var nameOfChuseCategory: String?
     private let tableView = UITableView()
     private let starImage = UIImageView(image: UIImage(named: "star"))
     private let labelStar = UILabel()
     private let tableViewContainer = UIView()
     private let tableData = [""]
     
-    private var currentSelectedCell: UITableViewCell? = nil
+    
+    private var currentSelectedCell: UITableViewCell?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -114,7 +116,7 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
         ])
         
     }
-
+    
     func showCategories() {
         let categories = categoriesServise.categories
         
@@ -138,11 +140,11 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-      
+        
         let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
         
         cell.textLabel?.text = categoriesServise.categories[indexPath.row]
-      
+        
         cell.tag = indexPath.row
         
         let interaction = UIContextMenuInteraction(delegate: self)
@@ -150,23 +152,25 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
         
         cell.backgroundColor = .gr
         cell.selectionStyle = .none
-       
+        
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-
+        
         if let selectedCell = tableView.cellForRow(at: indexPath) {
             if selectedCell == currentSelectedCell {
-
+                
                 selectedCell.accessoryType = .none
                 currentSelectedCell = nil
+                nameOfChuseCategory = nil
             } else {
-
+                
                 currentSelectedCell?.accessoryType = .none
                 
                 currentSelectedCell = selectedCell
                 currentSelectedCell?.accessoryType = .checkmark
+                nameOfChuseCategory = categoriesServise.categories[indexPath.row]
             }
         }
     }
@@ -177,16 +181,24 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
     
     @objc func didTapaddCategoryButton() {
         
-        if currentSelectedCell?.accessoryType == .checkmark {
-            dismiss(animated: true)
-        } else {
-            let createCategoriesController = CreateCategoriesController()
+        if let selectedCell = currentSelectedCell, selectedCell.accessoryType == .checkmark {
             
+            nameOfChuseCategory = self.categoriesServise.categories[selectedCell.tag]
+            
+            categoriesServise.updateSelectedCategory(nameOfChuseCategory ?? "")
+            
+            NotificationCenter.default.post(name: CategoriesServise.didChangeCategories, object: nil)
+            dismiss(animated: true)
+            
+        } else {
+            
+            let createCategoriesController = CreateCategoriesController()
             createCategoriesController.modalPresentationStyle = .automatic
             present(createCategoriesController, animated: true, completion: nil)
         }
     }
 }
+
 
 extension CategoriesController: UIContextMenuInteractionDelegate {
     
@@ -209,28 +221,28 @@ extension CategoriesController: UIContextMenuInteractionDelegate {
             }
             
             let deleteAction = UIAction(title: "Удалить", attributes: .destructive) { _ in
-                            self.showDeleteConfirmation(for: index)
-                        }
-                        
-                        return UIMenu(title: "", children: [editAction, deleteAction])
-                    }
-                }
-                
-                private func showDeleteConfirmation(for index: Int) {
-                    let alert = UIAlertController(title: "",
-                                                  message: "Эта категория точно не нужна?",
-                                                  preferredStyle: .actionSheet)
-                    
-                    let cancelAction = UIAlertAction(title: "Отмена", style: .cancel, handler: nil)
-                    let deleteAction = UIAlertAction(title: "Удалить", style: .destructive) { _ in
-                        self.categoriesServise.categories.remove(at: index)
-                        self.tableView.deleteRows(at: [IndexPath(row: index, section: 0)], with: .automatic)
-                        self.categoriesServise.saveCategories()
-                    }
-                    
-                    alert.addAction(cancelAction)
-                    alert.addAction(deleteAction)
-                    
-                    present(alert, animated: true, completion: nil)
-                }
+                self.showDeleteConfirmation(for: index)
             }
+            
+            return UIMenu(title: "", children: [editAction, deleteAction])
+        }
+    }
+    
+    private func showDeleteConfirmation(for index: Int) {
+        let alert = UIAlertController(title: "",
+                                      message: "Эта категория точно не нужна?",
+                                      preferredStyle: .actionSheet)
+        
+        let cancelAction = UIAlertAction(title: "Отмена", style: .cancel, handler: nil)
+        let deleteAction = UIAlertAction(title: "Удалить", style: .destructive) { _ in
+            self.categoriesServise.categories.remove(at: index)
+            self.tableView.deleteRows(at: [IndexPath(row: index, section: 0)], with: .automatic)
+            self.categoriesServise.saveCategories()
+        }
+        
+        alert.addAction(cancelAction)
+        alert.addAction(deleteAction)
+        
+        present(alert, animated: true, completion: nil)
+    }
+}

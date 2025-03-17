@@ -5,34 +5,34 @@
 //  Created by Anastasiia on 26.02.2025.
 //
 
-import Foundation
+import UIKit
 
-struct Tracker {
+struct Tracker{
     let id: UUID
     let name: String
-    let color: String
+    let color: UIColor
     let emoji: String
     let calendar: [Weekday]
+    let date: String?
 }
 
-struct TrackerCategory {
+struct TrackerCategory{
     let title: String
-    let trakers: [Tracker]
+    var trakers: [Tracker]
 }
 
-struct TrackerRecord {
+struct TrackerRecord{
     let id: UUID
     let date: String
 }
 
-enum Weekday: String {
+enum Weekday: String, CaseIterable {
+    case Sunday = "Воскресенье"
     case Monday = "Понедельник"
     case Tuesday = "Вторник"
     case Wednesday = "Среда"
     case Thursday = "Четверг"
     case Friday = "Пятница"
     case Saturday = "Суббота"
-    case Sunday = "Воскресенье"
 }
-
 

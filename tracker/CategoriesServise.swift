@@ -7,6 +7,7 @@ final class CategoriesServise {
     private let categoriesKey = "savedCategories"
     
     static let didChangeNotification = Notification.Name(rawValue: "CategoriesDidChange")
+    static let didChangeCategories = Notification.Name(rawValue: "AddCategories")
     
     private init() {
         loadCategories()
@@ -14,10 +15,15 @@ final class CategoriesServise {
     
     var categories: [String] = []
     
+    var selectedCategory: String? 
+    
     func addCategories(_ category: String) {
         categories.append(category)
         saveCategories()
         
+    }
+    func updateSelectedCategory(_ category: String) {
+        selectedCategory = category
     }
     
     private func loadCategories() {

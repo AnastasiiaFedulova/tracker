@@ -8,6 +8,11 @@ import UIKit
 
 final class NewIrregularEventController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
     
+    let categoriesServise = CategoriesServise.shared
+    var chuseCategoriesName: String = ""
+    let categoriesController = CategoriesController()
+    let categories = UILabel()
+    let chuseCategoriesNames = UILabel()
     let name = UITextField()
     private let clearButton = UIButton(type: .custom)
     private let tableView = UITableView()
@@ -27,6 +32,18 @@ final class NewIrregularEventController: UIViewController, UICollectionViewDataS
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        NotificationCenter.default
+            .addObserver(
+                forName: CategoriesServise.didChangeCategories,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                guard let self = self else { return }
+                
+                chuseCategoriesNames.text = categoriesServise.selectedCategory
+            }
+        
+        
         setupClearButton()
         name.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         
@@ -45,7 +62,7 @@ final class NewIrregularEventController: UIViewController, UICollectionViewDataS
         let NewIrregularEventLabel = UILabel()
         NewIrregularEventLabel.textColor = .black
         NewIrregularEventLabel.text = "Новое нерегулярное событие"
-        NewIrregularEventLabel.font = .boldSystemFont(ofSize: 16)
+        NewIrregularEventLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         NewIrregularEventLabel.textAlignment = .center
         NewIrregularEventLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(NewIrregularEventLabel)
@@ -69,7 +86,7 @@ final class NewIrregularEventController: UIViewController, UICollectionViewDataS
         name.delegate = self
         name.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         name.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(name)
+        scrollView.addSubview(name)
         
         name.setContentHuggingPriority(.required, for: .vertical)
         name.setContentCompressionResistancePriority(.required, for: .vertical)
@@ -96,6 +113,28 @@ final class NewIrregularEventController: UIViewController, UICollectionViewDataS
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             tableView.topAnchor.constraint(equalTo: name.bottomAnchor, constant: 20)
+        ])
+        
+        categories.text = "Категория"
+        categories.textColor = .clear
+        categories.translatesAutoresizingMaskIntoConstraints = false
+        tableView.addSubview(categories)
+        
+        NSLayoutConstraint.activate([
+            categories.leadingAnchor.constraint(equalTo: tableView.leadingAnchor, constant: 16),
+            categories.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 27)
+            
+        ])
+        
+        chuseCategoriesNames.text = chuseCategoriesName
+        chuseCategoriesNames.textColor = .gray
+        chuseCategoriesNames.translatesAutoresizingMaskIntoConstraints = false
+        tableView.addSubview(chuseCategoriesNames)
+        
+        NSLayoutConstraint.activate([
+            chuseCategoriesNames.leadingAnchor.constraint(equalTo: tableView.leadingAnchor, constant: 16),
+            chuseCategoriesNames.topAnchor.constraint(equalTo: categories.bottomAnchor, constant: 2),
+            
         ])
         
         let emojiLabel = UILabel()
@@ -165,7 +204,7 @@ final class NewIrregularEventController: UIViewController, UICollectionViewDataS
         NSLayoutConstraint.activate([
             color.widthAnchor.constraint(equalToConstant: 52),
             color.heightAnchor.constraint(equalToConstant: 18),
-            color.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
+            color.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 28),
             color.topAnchor.constraint(equalTo: name.bottomAnchor, constant: 369)
         ])
         
@@ -177,7 +216,7 @@ final class NewIrregularEventController: UIViewController, UICollectionViewDataS
         cancellButton.layer.borderColor = UIColor.button.cgColor
         cancellButton.layer.cornerRadius = 16
         cancellButton.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(cancellButton)
+        scrollView.addSubview(cancellButton)
         cancellButton.addTarget(self, action: #selector(didTapCancelButton), for: .touchUpInside)
         
         NSLayoutConstraint.activate([
@@ -194,8 +233,8 @@ final class NewIrregularEventController: UIViewController, UICollectionViewDataS
         
         createButton.layer.cornerRadius = 16
         createButton.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(createButton)
-        createButton.addTarget(self, action: #selector(didTapCancelButton), for: .touchUpInside)
+        scrollView.addSubview(createButton)
+        createButton.addTarget(self, action: #selector(didTapCreateButton), for: .touchUpInside)
         
         NSLayoutConstraint.activate([
             createButton.widthAnchor.constraint(equalToConstant: 161),
@@ -203,6 +242,8 @@ final class NewIrregularEventController: UIViewController, UICollectionViewDataS
             createButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             createButton.topAnchor.constraint(equalTo: colorCollectionView.bottomAnchor, constant: 30)
         ])
+        
+        
         
         NSLayoutConstraint.activate([
             scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -216,11 +257,14 @@ final class NewIrregularEventController: UIViewController, UICollectionViewDataS
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
             contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
             contentView.bottomAnchor.constraint(equalTo: cancellButton.bottomAnchor, constant: 200),
-          
+            
             contentView.heightAnchor.constraint(equalToConstant: 1000),
             contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
         ])
         
+    }
+    func setCategoryName(_ name: String) {
+        self.chuseCategoriesName = name
     }
     
     private func setupClearButton() {
@@ -329,18 +373,34 @@ extension NewIrregularEventController {
             let itemWidth = (collectionView.frame.width - totalSpacing) / itemsPerRow
             return CGSize(width: itemWidth, height: 50)
         }
-        return CGSize(width: 50, height: 50) 
+        return CGSize(width: 50, height: 50)
     }
     
     @objc func didTapCancelButton() {
         dismiss(animated: true)
     }
     
-    func didTapCreateButton() {
-        print("Button tapped")
-        let trackerTypesController = TrackerTypesController()
-        trackerTypesController.modalPresentationStyle = .automatic
-        present(trackerTypesController, animated: true, completion: nil)
+    @objc func didTapCreateButton() {
+        
+        let currentData = Date()
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "dd.MM.yyyy"
+        let formattedDate = dateFormatter.string(from: currentData)
+        
+        let newTracker = Tracker(id: UUID(), name: name.text ?? "", color: .green, emoji: "🌿", calendar: [], date: formattedDate)
+        
+        var targetVC = presentingViewController
+        while targetVC != nil, !(targetVC is ViewController) {
+            targetVC = targetVC?.presentingViewController
+        }
+        
+        guard let viewController = targetVC as? ViewController else {
+            return
+        }
+        
+        viewController.addTracker(forCategory: chuseCategoriesNames.text ?? "", tracker: newTracker)
+        
+        viewController.dismiss(animated: true)
     }
 }
 
