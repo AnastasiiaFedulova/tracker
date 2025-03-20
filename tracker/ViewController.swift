@@ -77,19 +77,21 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
     }
     
     init() {
-        let layout = UICollectionViewFlowLayout()
-        layout.sectionInset = UIEdgeInsets(top: 12, left: 16, bottom: 0, right: 16)
-        let padding: CGFloat = 16
-        let spacing: CGFloat = 9
-        let totalSpacing = padding * 2 + spacing
-        let itemWidth = (UIScreen.main.bounds.width - totalSpacing) / 2
-        layout.itemSize = CGSize(width: itemWidth, height: 148)
-        layout.itemSize = CGSize(width: (UIScreen.main.bounds.width - 16 * 2 - 9) / 2, height: 148)
+                let layout = UICollectionViewFlowLayout()
+                layout.sectionInset = UIEdgeInsets(top: 12, left: 16, bottom: 0, right: 16)
         
-        collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        super.init(nibName: nil, bundle: nil)
-        collectionView.collectionViewLayout = layout
-    }
+                let padding: CGFloat = 16
+                let spacing: CGFloat = 9
+                let totalSpacing = padding * 2 + spacing
+                let itemWidth = (UIScreen.main.bounds.width - totalSpacing) / 2
+                layout.itemSize = CGSize(width: itemWidth, height: 148)
+                layout.itemSize = CGSize(width: (UIScreen.main.bounds.width - 16 * 2 - 9) / 2, height: 148)
+        
+                collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+                super.init(nibName: nil, bundle: nil)
+                collectionView.collectionViewLayout = layout
+            }
+
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -97,13 +99,13 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
     
     
     override func viewDidLoad() {
-        
-        //        let newTracker1 = Tracker(id:UUID(), name: "Поливать цветы", color: .colorSelection5, emoji: "❤️", calendar: [.Thursday], date: nil)
-        //
-        //        let newTracker2 = Tracker(id:UUID(), name: "eat цветы", color: .colorSelection5, emoji: "❤️", calendar: [.Thursday], date: nil)
-        //
-        //                addTracker(forCategory: "Домашний уют", tracker: newTracker1)
-        //                addTracker(forCategory: "Домашний уют", tracker: newTracker2)
+//        
+//                let newTracker1 = Tracker(id:UUID(), name: "Поливать цветы", color: .colorSelection5, emoji: "❤️", calendar: [.Thursday], date: nil)
+//        
+//                let newTracker2 = Tracker(id:UUID(), name: "eat цветы", color: .colorSelection5, emoji: "❤️", calendar: [.Thursday], date: nil)
+//        
+//                        addTracker(forCategory: "Домашний уют", tracker: newTracker1)
+//                        addTracker(forCategory: "Домашний уют", tracker: newTracker2)
         
         super.viewDidLoad()
         
@@ -256,11 +258,11 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
         collectionView.register(CategoryHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: CategoryHeaderView.reuseIdentifier)
     }
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return 9
+        return 16
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-        return 9
+        return 0
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
@@ -298,12 +300,27 @@ extension ViewController {
 extension ViewController {
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let padding: CGFloat = 16
-        let spacing: CGFloat = 9
-        let totalSpacing = padding * 2 + spacing
-        let itemWidth = (collectionView.bounds.width - totalSpacing) / 2
-        return CGSize(width: itemWidth, height: 148)
-    }
+        
+                // Вытаскиваем доступную ширину экрана
+                let availableWidth = collectionView.bounds.width
+       
+                // Устанавливаем отступы с краев экрана
+                let padding: CGFloat = 16  // Отступы слева и справа
+                let spasing: CGFloat = availableWidth - (167 * 2) - (padding * 2)
+                // Считаем количество ячеек, которое будет в строке
+                let numberOfItemsInRow: CGFloat = 2 // Например, 2 ячейки в строке
+                
+                // Рассчитываем ширину для каждой ячейки с учетом отступов
+                let itemWidth = (availableWidth - (padding * 2) - spasing) / numberOfItemsInRow
+                
+                // Устанавливаем размер ячейки (фиксируем высоту, если необходимо)
+                return CGSize(width: itemWidth, height: 148) // Высота ячеек фиксирована
+//            }
+//        
+
+        
+
+   }
     func addTracker(forCategory categoryTitle: String, tracker: Tracker) {
         print("work")
         var updatedCategories = categories
@@ -389,7 +406,7 @@ final class TrackerCell: UICollectionViewCell {
         background.addSubview(emojiLabel)
         background.addSubview(titleLabel)
         
-        
+     
         contentView.addSubview(dayLabel)
         contentView.addSubview(doneButton)
         
@@ -399,7 +416,7 @@ final class TrackerCell: UICollectionViewCell {
             background.topAnchor.constraint(equalTo: contentView.topAnchor, constant: -12),
             
             background.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            //background.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            background.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             background.heightAnchor.constraint(equalToConstant: 90),
             background.widthAnchor.constraint(equalToConstant: 167),
             
@@ -424,7 +441,7 @@ final class TrackerCell: UICollectionViewCell {
             doneButton.trailingAnchor.constraint(equalTo: background.trailingAnchor, constant: -12)
         ])
     }
-    
+
     override func layoutSubviews() {
         super.layoutSubviews()
         print("Subviews:", contentView.subviews)
