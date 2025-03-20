@@ -301,25 +301,16 @@ extension ViewController {
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         
-                // Вытаскиваем доступную ширину экрана
                 let availableWidth = collectionView.bounds.width
        
-                // Устанавливаем отступы с краев экрана
-                let padding: CGFloat = 16  // Отступы слева и справа
+                let padding: CGFloat = 16
                 let spasing: CGFloat = availableWidth - (167 * 2) - (padding * 2)
-                // Считаем количество ячеек, которое будет в строке
-                let numberOfItemsInRow: CGFloat = 2 // Например, 2 ячейки в строке
-                
-                // Рассчитываем ширину для каждой ячейки с учетом отступов
+
+                let numberOfItemsInRow: CGFloat = 2
+
                 let itemWidth = (availableWidth - (padding * 2) - spasing) / numberOfItemsInRow
-                
-                // Устанавливаем размер ячейки (фиксируем высоту, если необходимо)
-                return CGSize(width: itemWidth, height: 148) // Высота ячеек фиксирована
-//            }
-//        
 
-        
-
+                return CGSize(width: itemWidth, height: 148)
    }
     func addTracker(forCategory categoryTitle: String, tracker: Tracker) {
         print("work")
