@@ -20,16 +20,17 @@ final class TrackerTypesController: UIViewController {
         view.addSubview(MakeTracker)
         
         NSLayoutConstraint.activate([
-            MakeTracker.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 114),
-            MakeTracker.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -112),
+            MakeTracker.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             MakeTracker.topAnchor.constraint(equalTo: view.topAnchor, constant: 38)
         ])
         
-        let buttonHabit = UIButton(type: .system)
+        let buttonHabit = UIButton(type: .custom)
         buttonHabit.setTitle("Привычка", for: .normal)
         buttonHabit.setTitleColor(.white, for: .normal)
         buttonHabit.backgroundColor = .black
         buttonHabit.layer.cornerRadius = 16
+        
+        buttonHabit.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         
         buttonHabit.translatesAutoresizingMaskIntoConstraints = false
         buttonHabit.addTarget(self, action: #selector(didTapHabitButton), for: .touchUpInside)
@@ -50,6 +51,8 @@ final class TrackerTypesController: UIViewController {
         buttonIrregularEvent.backgroundColor = .black
         buttonIrregularEvent.layer.cornerRadius = 16
         
+        buttonIrregularEvent.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        
         buttonIrregularEvent.translatesAutoresizingMaskIntoConstraints = false
         buttonIrregularEvent.addTarget(self, action: #selector(didTapIrregularEventButton), for: .touchUpInside)
         
@@ -69,6 +72,7 @@ final class TrackerTypesController: UIViewController {
         let newHabitController = NewHabitController()
         newHabitController.modalPresentationStyle = .automatic
         present(newHabitController, animated: true, completion: nil)
+        
     }
     
     @objc func didTapIrregularEventButton() {

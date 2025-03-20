@@ -49,13 +49,12 @@ final class ScheduleController: UIViewController, UITableViewDataSource, UITable
         
         scheduleLabel.textColor = .black
         scheduleLabel.text = "Расписание"
-        scheduleLabel.font = .boldSystemFont(ofSize: 16)
+        scheduleLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         scheduleLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(scheduleLabel)
         
         NSLayoutConstraint.activate([
-            scheduleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 146),
-            scheduleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -145),
+            scheduleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             scheduleLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 38)
         ])
         
@@ -75,7 +74,7 @@ final class ScheduleController: UIViewController, UITableViewDataSource, UITable
             tableView.heightAnchor.constraint(equalToConstant: CGFloat(tableData.flatMap{ $0 }.count) * 75),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            tableView.topAnchor.constraint(equalTo: scheduleLabel.bottomAnchor, constant: 20)
+            tableView.topAnchor.constraint(equalTo: scheduleLabel.bottomAnchor, constant: 30)
             
         ])
         
@@ -87,6 +86,8 @@ final class ScheduleController: UIViewController, UITableViewDataSource, UITable
         doneButton.translatesAutoresizingMaskIntoConstraints = false
         doneButton.addTarget(self, action: #selector(didTapDoneButton), for: .touchUpInside)
         
+        doneButton.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        
         view.addSubview(doneButton)
         
         NSLayoutConstraint.activate([
@@ -94,7 +95,7 @@ final class ScheduleController: UIViewController, UITableViewDataSource, UITable
             doneButton.widthAnchor.constraint(equalToConstant: 335),
             doneButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             doneButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            doneButton.topAnchor.constraint(equalTo: scheduleLabel.bottomAnchor, constant: 588)
+            doneButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16)
         ])
         
     }

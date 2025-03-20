@@ -12,7 +12,6 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
     private let tableViewContainer = UIView()
     private let tableData = [""]
     
-    
     private var currentSelectedCell: UITableViewCell?
     
     override func viewDidLoad() {
@@ -21,7 +20,7 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
         
         setupUI()
         showCategories()
-        
+  
         NotificationCenter.default
             .addObserver(
                 forName: CategoriesServise.didChangeNotification,
@@ -31,6 +30,7 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
                 guard let self = self else { return }
                 
                 showCategories()
+             
             }
     }
     
@@ -38,7 +38,7 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
         let categoriesLabel = UILabel()
         categoriesLabel.textColor = .black
         categoriesLabel.text = "Категория"
-        categoriesLabel.font = .boldSystemFont(ofSize: 16)
+        categoriesLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         categoriesLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(categoriesLabel)
         
@@ -86,7 +86,7 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
         
         labelStar.text = "Привычки и события можно \n объединить по смыслу"
         labelStar.numberOfLines = 0
-        labelStar.font = .boldSystemFont(ofSize: 12)
+        labelStar.font = UIFont.systemFont(ofSize: 12, weight: .medium)
         labelStar.textColor = .black
         labelStar.textAlignment = .center
         labelStar.translatesAutoresizingMaskIntoConstraints = false
@@ -106,6 +106,8 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
         addCategoryButton.translatesAutoresizingMaskIntoConstraints = false
         addCategoryButton.addTarget(self, action: #selector(didTapaddCategoryButton), for: .touchUpInside)
         view.addSubview(addCategoryButton)
+        
+        addCategoryButton.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         
         NSLayoutConstraint.activate([
             addCategoryButton.heightAnchor.constraint(equalToConstant: 60),
@@ -178,6 +180,7 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 75
     }
+    
     
     @objc func didTapaddCategoryButton() {
         

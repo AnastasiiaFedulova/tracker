@@ -15,11 +15,14 @@ final class CategoriesServise {
     
     var categories: [String] = []
     
-    var selectedCategory: String? 
+    var selectedCategory: String?
     
     func addCategories(_ category: String) {
+        
         categories.append(category)
         saveCategories()
+        
+        NotificationCenter.default.post(name: CategoriesServise.didChangeNotification, object: nil)
         
     }
     func updateSelectedCategory(_ category: String) {

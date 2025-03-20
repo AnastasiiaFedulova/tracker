@@ -68,9 +68,8 @@ final class EditCategoriesController: UIViewController, UITextFieldDelegate {
             doneButton.widthAnchor.constraint(equalToConstant: 335),
             doneButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             doneButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            doneButton.topAnchor.constraint(equalTo: editcategoriesLabel.bottomAnchor, constant: 602)
+            doneButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16)
         ])
-        
     }
     
     @objc func didTapdoneButton() {

@@ -18,7 +18,7 @@ struct Tracker{
 
 struct TrackerCategory{
     let title: String
-    var trakers: [Tracker]
+    let trakers: [Tracker]
 }
 
 struct TrackerRecord{

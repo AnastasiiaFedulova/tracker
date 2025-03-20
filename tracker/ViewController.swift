@@ -6,7 +6,7 @@
 //
 import UIKit
 
-final class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
+final class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return visibleCategories[section].trakers.count
@@ -41,7 +41,6 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
         return completedTrackers[id]?.count ?? 0
     }
     
-    
     public func addcompletedTracker(id: UUID, isCompleted: Bool) {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd.MM.yyyy"
@@ -57,7 +56,6 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
         } else {
             completedTrackers[id]?.removeAll { $0 == formattedDate }
         }
-        
         print(completedTrackers)
         collectionView.reloadData()
     }
@@ -70,6 +68,7 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
     let labelStar = UILabel()
     private var visibleCategories: [TrackerCategory] = []
     
+    
     var categories: [TrackerCategory] = []
     {
         didSet {
@@ -79,11 +78,17 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
     
     init() {
         let layout = UICollectionViewFlowLayout()
-        layout.sectionInset = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
-        layout.minimumLineSpacing = 10
-        layout.minimumInteritemSpacing = 10
+        layout.sectionInset = UIEdgeInsets(top: 12, left: 16, bottom: 0, right: 16)
+        let padding: CGFloat = 16
+        let spacing: CGFloat = 9
+        let totalSpacing = padding * 2 + spacing
+        let itemWidth = (UIScreen.main.bounds.width - totalSpacing) / 2
+        layout.itemSize = CGSize(width: itemWidth, height: 148)
+        layout.itemSize = CGSize(width: (UIScreen.main.bounds.width - 16 * 2 - 9) / 2, height: 148)
+        
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         super.init(nibName: nil, bundle: nil)
+        collectionView.collectionViewLayout = layout
     }
     
     required init?(coder: NSCoder) {
@@ -93,12 +98,12 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
     
     override func viewDidLoad() {
         
-        //        let newTracker1 = Tracker(id:UUID(), name: "Поливать цветы", color: .green, emoji: "🌿", calendar: [.Monday,.Friday], date: nil)
+        //        let newTracker1 = Tracker(id:UUID(), name: "Поливать цветы", color: .colorSelection5, emoji: "❤️", calendar: [.Thursday], date: nil)
         //
-        //        let newTracker2 = Tracker(id:UUID(), name: "eat цветы", color: .green, emoji: "🌿", calendar: [.Monday, .Friday], date: nil)
+        //        let newTracker2 = Tracker(id:UUID(), name: "eat цветы", color: .colorSelection5, emoji: "❤️", calendar: [.Thursday], date: nil)
         //
-        //        addTracker(forCategory: "Домашний уют", tracker: newTracker1)
-        //        addTracker(forCategory: "vvvv", tracker: newTracker2)
+        //                addTracker(forCategory: "Домашний уют", tracker: newTracker1)
+        //                addTracker(forCategory: "Домашний уют", tracker: newTracker2)
         
         super.viewDidLoad()
         
@@ -128,7 +133,7 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
         let trekerLabel = UILabel()
         trekerLabel.textColor = .black
         trekerLabel.text = "Трекеры"
-        trekerLabel.font = .boldSystemFont(ofSize: 34)
+        trekerLabel.font = UIFont.systemFont(ofSize: 34, weight: .bold)
         trekerLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(trekerLabel)
         
@@ -142,6 +147,7 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
         collectionView.backgroundColor = .white
         
         searchBar.placeholder = "Поиск"
+        
         searchBar.translatesAutoresizingMaskIntoConstraints = false
         
         view.addSubview(searchBar)
@@ -153,7 +159,6 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
             searchBar.heightAnchor.constraint(equalToConstant: 36)
         ])
         
-        
         starImage.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(starImage)
         
@@ -162,36 +167,6 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
             starImage.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             starImage.widthAnchor.constraint(equalToConstant: 80),
             starImage.heightAnchor.constraint(equalToConstant: 80)
-        ])
-        
-        let tabBarController = UITabBarController()
-        
-        let firstViewController = UIViewController()
-        firstViewController.tabBarItem = UITabBarItem(
-            title: "Трекеры",
-            image: UIImage(named: "ic 28x28 1"),
-            selectedImage: UIImage(named: "ic 28x28 1")
-        )
-        
-        let secondViewController = UIViewController()
-        secondViewController.tabBarItem = UITabBarItem(
-            title: "Профиль",
-            image: UIImage(named: "ic 28x28 2"),
-            selectedImage: UIImage(named: "ic 28x28 3")
-        )
-        
-        tabBarController.viewControllers = [firstViewController, secondViewController]
-        
-        addChild(tabBarController)
-        view.addSubview(tabBarController.view)
-        tabBarController.didMove(toParent: self)
-        
-        tabBarController.view.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            tabBarController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tabBarController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tabBarController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            tabBarController.view.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 8)
         ])
         
         labelStar.text = "Что будем отслеживать?"
@@ -224,8 +199,8 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
         
         NSLayoutConstraint.activate([
             collectionView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 34),
-            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
         
@@ -280,6 +255,13 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
         collectionView.register(TrackerCell.self, forCellWithReuseIdentifier: "TrackerCell")
         collectionView.register(CategoryHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: CategoryHeaderView.reuseIdentifier)
     }
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return 9
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+        return 9
+    }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
         return CGSize(width: collectionView.bounds.width, height: 50)
@@ -313,19 +295,26 @@ extension ViewController {
     }
 }
 
-extension ViewController: UICollectionViewDelegateFlowLayout {
+extension ViewController {
+
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: 150, height: 120)
+        let padding: CGFloat = 16
+        let spacing: CGFloat = 9
+        let totalSpacing = padding * 2 + spacing
+        let itemWidth = (collectionView.bounds.width - totalSpacing) / 2
+        return CGSize(width: itemWidth, height: 148)
     }
-    
     func addTracker(forCategory categoryTitle: String, tracker: Tracker) {
+        print("work")
         var updatedCategories = categories
         
         if let categoryIndex = updatedCategories.firstIndex(where: { $0.title == categoryTitle }) {
+            let updatedTrackers = updatedCategories[categoryIndex].trakers + [tracker]
             
-            updatedCategories[categoryIndex].trakers.append(tracker)
+            let updatedCategory = TrackerCategory(title: updatedCategories[categoryIndex].title, trakers: updatedTrackers)
+            
+            updatedCategories[categoryIndex] = updatedCategory
         } else {
-            
             let newCategory = TrackerCategory(title: categoryTitle, trakers: [tracker])
             updatedCategories.append(newCategory)
         }
@@ -339,10 +328,10 @@ final class TrackerCell: UICollectionViewCell {
     private let emojiLabel = UILabel()
     private let titleLabel = UILabel()
     private let background = UIView()
-    private let categoryLabel = UILabel()
     private let emojiBackground = UIView()
     private let doneButton = UIButton()
     private let dayLabel = UILabel()
+    
     
     var isCompleted = false
     var id: UUID? = nil
@@ -365,29 +354,30 @@ final class TrackerCell: UICollectionViewCell {
         contentView.widthAnchor.constraint(equalToConstant: 167).isActive = true
         
         background.layer.cornerRadius = 16
-        background.backgroundColor = .green
+        background.backgroundColor = .colorSelection5
         background.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(background)
         
         emojiBackground.layer.cornerRadius = 12
         emojiBackground.layer.masksToBounds = true
-        emojiBackground.backgroundColor = .systemGray5
+        emojiBackground.backgroundColor = .fone
         emojiBackground.translatesAutoresizingMaskIntoConstraints = false
         
         emojiLabel.font = .systemFont(ofSize: 16)
         emojiLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        titleLabel.font = .systemFont(ofSize: 14)
+        titleLabel.font = UIFont.systemFont(ofSize: 12, weight: .medium)
         titleLabel.textColor = .white
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         
         dayLabel.text = "0 дней"
         dayLabel.textColor = .black
+        dayLabel.font = UIFont.systemFont(ofSize: 12, weight: .medium)
         dayLabel.translatesAutoresizingMaskIntoConstraints = false
         
         let image = UIImage(named: "Property1")?.withRenderingMode(.alwaysTemplate)
         doneButton.setImage(image, for: .normal)
-        doneButton.tintColor = .green
+        doneButton.tintColor = .colorSelection5
         doneButton.translatesAutoresizingMaskIntoConstraints = false
         doneButton.addTarget(self, action: #selector(toggleCompletion), for: .touchUpInside)
         
@@ -399,15 +389,19 @@ final class TrackerCell: UICollectionViewCell {
         background.addSubview(emojiLabel)
         background.addSubview(titleLabel)
         
+        
         contentView.addSubview(dayLabel)
         contentView.addSubview(doneButton)
         
         NSLayoutConstraint.activate([
             
-            background.topAnchor.constraint(equalTo: contentView.topAnchor),
+            
+            background.topAnchor.constraint(equalTo: contentView.topAnchor, constant: -12),
+            
             background.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            background.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            //background.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             background.heightAnchor.constraint(equalToConstant: 90),
+            background.widthAnchor.constraint(equalToConstant: 167),
             
             emojiBackground.widthAnchor.constraint(equalToConstant: 24),
             emojiBackground.heightAnchor.constraint(equalToConstant: 24),
@@ -431,10 +425,6 @@ final class TrackerCell: UICollectionViewCell {
         ])
     }
     
-    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
-        let expandedBounds = bounds.insetBy(dx: -70, dy: -70)
-        return expandedBounds.contains(point)
-    }
     override func layoutSubviews() {
         super.layoutSubviews()
         print("Subviews:", contentView.subviews)
@@ -468,7 +458,7 @@ final class TrackerCell: UICollectionViewCell {
             doneButton.setImage(nil, for: .normal)
             doneButton.setImage(newImage, for: .normal)
             
-            doneButton.tintColor = .green
+            doneButton.tintColor = .colorSelection5
             doneButton.alpha = isCompleted ? 0.3 : 1.0
             doneButton.layoutIfNeeded()
             
@@ -532,7 +522,7 @@ final class CategoryHeaderView: UICollectionReusableView {
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.font = .boldSystemFont(ofSize: 18)
+        label.font = UIFont.systemFont(ofSize: 19, weight: .bold)
         label.textColor = .black
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -552,9 +542,9 @@ final class CategoryHeaderView: UICollectionReusableView {
         
         NSLayoutConstraint.activate([
             titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 28),
-            
             titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor)
         ])
+        
     }
     
     func configure(with title: String) {

@@ -20,7 +20,7 @@ final class CreateCategoriesController: UIViewController, UITextFieldDelegate {
         let newCategoryLabel = UILabel()
         newCategoryLabel.textColor = .black
         newCategoryLabel.text = "Новая категория"
-        newCategoryLabel.font = .boldSystemFont(ofSize: 16)
+        newCategoryLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         newCategoryLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(newCategoryLabel)
         
@@ -57,12 +57,14 @@ final class CreateCategoriesController: UIViewController, UITextFieldDelegate {
         doneButton.addTarget(self, action: #selector(didTapdoneButton), for: .touchUpInside)
         view.addSubview(doneButton)
         
+        doneButton.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        
         NSLayoutConstraint.activate([
             doneButton.heightAnchor.constraint(equalToConstant: 60),
             doneButton.widthAnchor.constraint(equalToConstant: 335),
             doneButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             doneButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            doneButton.topAnchor.constraint(equalTo: newCategoryLabel.bottomAnchor, constant: 602)
+            doneButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16)
         ])
     }
     
