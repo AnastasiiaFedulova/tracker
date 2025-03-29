@@ -13,7 +13,7 @@ class CoreDataStack {
     private init() {}
     
     lazy var persistentContainer: NSPersistentContainer = {
-        let container = NSPersistentContainer(name: "Tracker") // Укажите название вашего файла модели
+        let container = NSPersistentContainer(name: "Tracker") 
         container.loadPersistentStores { description, error in
             if let error = error as NSError? {
                 fatalError("Unresolved error \(error), \(error.userInfo)")
@@ -37,5 +37,4 @@ class CoreDataStack {
             }
         }
     }
-    
 }

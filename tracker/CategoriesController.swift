@@ -1,6 +1,6 @@
 import UIKit
 
-final class CategoriesController: UIViewController, UITableViewDataSource, UITableViewDelegate {    
+final class CategoriesController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
     let categoriesServise = CategoriesServise.shared
     
@@ -20,7 +20,7 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
         
         setupUI()
         showCategories()
-  
+        
         NotificationCenter.default
             .addObserver(
                 forName: CategoriesServise.didChangeNotification,
@@ -30,7 +30,7 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
                 guard let self = self else { return }
                 
                 showCategories()
-             
+                
             }
     }
     

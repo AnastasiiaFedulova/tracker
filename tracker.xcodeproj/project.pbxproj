@@ -11,7 +11,6 @@
 		5504F6902D91A19700C2032D /* TrackerStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5504F68F2D91A19700C2032D /* TrackerStore.swift */; };
 		5504F6922D91A1DA00C2032D /* TrackerCategoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5504F6912D91A1DA00C2032D /* TrackerCategoryStore.swift */; };
 		5504F6942D91A20400C2032D /* TrackerRecordStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5504F6932D91A20400C2032D /* TrackerRecordStore.swift */; };
-		5504F6962D91AA8600C2032D /* Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5504F6952D91AA8600C2032D /* Store.swift */; };
 		5504F69B2D941EEE00C2032D /* CoreDataStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5504F69A2D941EEE00C2032D /* CoreDataStack.swift */; };
 		5504F69D2D94905F00C2032D /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5504F69C2D94905F00C2032D /* PersistenceController.swift */; };
 		5504F69F2D94912800C2032D /* color.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5504F69E2D94912800C2032D /* color.swift */; };
@@ -37,7 +36,6 @@
 		5504F68F2D91A19700C2032D /* TrackerStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerStore.swift; sourceTree = "<group>"; };
 		5504F6912D91A1DA00C2032D /* TrackerCategoryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerCategoryStore.swift; sourceTree = "<group>"; };
 		5504F6932D91A20400C2032D /* TrackerRecordStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerRecordStore.swift; sourceTree = "<group>"; };
-		5504F6952D91AA8600C2032D /* Store.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Store.swift; sourceTree = "<group>"; };
 		5504F69A2D941EEE00C2032D /* CoreDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStack.swift; sourceTree = "<group>"; };
 		5504F69C2D94905F00C2032D /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
 		5504F69E2D94912800C2032D /* color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = color.swift; sourceTree = "<group>"; };
@@ -74,10 +72,9 @@
 		5504F6992D930B3700C2032D /* store */ = {
 			isa = PBXGroup;
 			children = (
-				5504F6952D91AA8600C2032D /* Store.swift */,
 				5504F69C2D94905F00C2032D /* PersistenceController.swift */,
-				5504F68F2D91A19700C2032D /* TrackerStore.swift */,
 				5504F69E2D94912800C2032D /* color.swift */,
+				5504F68F2D91A19700C2032D /* TrackerStore.swift */,
 				5504F6912D91A1DA00C2032D /* TrackerCategoryStore.swift */,
 				5504F6932D91A20400C2032D /* TrackerRecordStore.swift */,
 				5504F69A2D941EEE00C2032D /* CoreDataStack.swift */,
@@ -201,7 +198,6 @@
 				5562A0702D6F8359000AB266 /* ViewController.swift in Sources */,
 				5562A0862D6F9EB8000AB266 /* NewHabitController.swift in Sources */,
 				5504F69B2D941EEE00C2032D /* CoreDataStack.swift in Sources */,
-				5504F6962D91AA8600C2032D /* Store.swift in Sources */,
 				5504F68E2D8F2C4500C2032D /* Model.xcdatamodeld in Sources */,
 				5562A08C2D71F3F1000AB266 /* ScheduleController.swift in Sources */,
 				5504F6942D91A20400C2032D /* TrackerRecordStore.swift in Sources */,

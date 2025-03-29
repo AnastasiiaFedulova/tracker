@@ -8,7 +8,7 @@
 import UIKit
 
 extension UIColor {
-    // Преобразуем UIColor в шестнадцатеричную строку
+
     func toHex() -> String {
         guard let components = self.cgColor.components else { return "#FFFFFF" }
         let red = components[0]
@@ -19,7 +19,6 @@ extension UIColor {
         return String(format: "#%02X%02X%02X", Int(red * 255), Int(green * 255), Int(blue * 255))
     }
     
-    // Преобразуем строку в UIColor
     static func fromHex(hex: String) -> UIColor {
         var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
         if hexSanitized.hasPrefix("#") {
@@ -37,6 +36,6 @@ extension UIColor {
             return UIColor(red: red, green: green, blue: blue, alpha: 1.0)
         }
         
-        return UIColor.white // Возвращаем белый цвет по умолчанию, если формат неверен
+        return UIColor.white 
     }
 }

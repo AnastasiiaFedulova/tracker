@@ -198,7 +198,6 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
         emojiCollectionView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(emojiCollectionView)
         emojiCollectionView.setContentHuggingPriority(.required, for: .vertical)
-        //emojiLabel.setContentCompressionResistancePriority(.required, for: .vertical)
         
         NSLayoutConstraint.activate([
             emojiCollectionView.topAnchor.constraint(equalTo: emojiLabel.bottomAnchor, constant: 20),
@@ -392,7 +391,6 @@ extension NewHabitController {
             ).isActive = true
             label.centerYAnchor.constraint(equalTo: cell.contentView.centerYAnchor).isActive = true
             
-            
             cell.contentView.addSubview(label)
             cell.contentView.layer.cornerRadius = 16
             cell.contentView.layer.masksToBounds = true
@@ -408,14 +406,12 @@ extension NewHabitController {
         if collectionView == colorCollectionView {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ColorCell", for: indexPath)
             
-            // Удаляем старые подвиды, если они есть
             cell.contentView.subviews.forEach { $0.removeFromSuperview() }
             
             let color = colors[indexPath.item]
             
-            // Внешняя цветная полоска (создаем только один раз, если она еще не существует)
             let outerView = UIView()
-            outerView.frame = CGRect(x: 0, y: 0, width: 46, height: 46) // 40 + 3 + 3
+            outerView.frame = CGRect(x: 0, y: 0, width: 46, height: 46)
             outerView.layer.cornerRadius = 8
             outerView.translatesAutoresizingMaskIntoConstraints = false
             outerView.backgroundColor = color
@@ -432,14 +428,13 @@ extension NewHabitController {
             
             // Внутренний цветной квадрат
             let innerView = UIView()
-            innerView.frame = CGRect(x: 0, y: 0, width: 34, height: 34) // 40 - 3 - 3
+            innerView.frame = CGRect(x: 0, y: 0, width: 34, height: 34)
             innerView.layer.cornerRadius = 8
             innerView.alpha = 1
             innerView.backgroundColor = color
             innerView.translatesAutoresizingMaskIntoConstraints = false
             cell.contentView.addSubview(innerView)
-            
-            // Constraints для выравнивания по центру
+
             NSLayoutConstraint.activate([
                 outerView.centerXAnchor.constraint(equalTo: cell.contentView.centerXAnchor),
                 outerView.centerYAnchor.constraint(equalTo: cell.contentView.centerYAnchor),
@@ -457,11 +452,10 @@ extension NewHabitController {
                 innerView.heightAnchor.constraint(equalToConstant: 34)
             ])
             
-            // Проверка, выбран ли этот цвет
             if selectedColorIndex == indexPath {
-                outerView.alpha = 0.3 // Полоска с прозрачностью 30% для выбранного цвета
+                outerView.alpha = 0.3
             } else {
-                outerView.alpha = 0 // Для остальных ячеек прозрачность 0
+                outerView.alpha = 0
             }
             
             return cell
@@ -480,7 +474,7 @@ extension NewHabitController {
             } else {
                 selectedColorIndex = indexPath
             }
-            collectionView.reloadData() // Перезагружаем данные, чтобы отобразить обновления
+            collectionView.reloadData()
         }
         if selectedEmojiIndex == indexPath {
             selectedEmojiIndex = nil
@@ -519,42 +513,35 @@ extension NewHabitController {
         dismiss(animated: true)
     }
     
-
+    
     @objc func didTapCreateButton() {
         print("Кнопка 'Создать' нажата")
         
         let weekdayArray = sceduleService.selectedWeekdays.compactMap { Weekday(rawValue: $0.rawValue) }
         
-        // Проверяем, что выбраны дни недели
         if weekdayArray.isEmpty {
-            print("Ошибка: Не выбраны дни недели для календаря.")
+            print("Ошибка: Не выбраны дни недели для календаря")
             return
         }
         
-        // Кодируем календарь в `Data`
         guard let calendarData = try? JSONEncoder().encode(weekdayArray) else {
-            print("Ошибка при кодировании календаря в Data.")
+            print("Ошибка при кодировании календаря в Data")
             return
         }
         
         let context = PersistenceController.shared.context
         
-        // Устанавливаем обязательные поля
-        let isCompleted = false // Пример значения для isCompleted
+        let isCompleted = false
         var category: TrackerCategoryCoreData? = nil
         
-        // Проверяем, выбрана ли категория
         if let categoryName = chuseCategoriesNames.text, !categoryName.isEmpty {
-            // Используем сервис для поиска категории
             category = CoreDataService.shared.fetchCategory(byName: categoryName, context: context)
             
             if category == nil {
-                // Если категория не найдена, можно создать новую
                 category = CoreDataService.shared.createCategory(name: categoryName, context: context)
             }
         }
         
-        // Создаем объект `TrackerCoreData` для сохранения
         let newTrackerCoreData = TrackerCoreData(context: context)
         newTrackerCoreData.id = UUID()
         newTrackerCoreData.name = name.text ?? ""
@@ -562,16 +549,14 @@ extension NewHabitController {
         newTrackerCoreData.emoji = "❤️"
         newTrackerCoreData.calendar = calendarData as NSData
         newTrackerCoreData.isCompleted = isCompleted
-        
-        // Привязываем категорию к трекеру, если она найдена
+
         if let category = category {
             newTrackerCoreData.category = category
         }
-        
-        // Сохраняем объект в Core Data
+
         do {
             try context.save()
-            print("Трекер успешно сохранен в Core Data.")
+            print("Трекер успешно сохранен в Core Data")
         } catch {
             print("Ошибка сохранения в Core Data: \(error)")
             return
@@ -582,7 +567,7 @@ extension NewHabitController {
             if let tabBarController = targetVC as? UITabBarController {
                 for viewController in tabBarController.viewControllers ?? [] {
                     if let viewController = viewController as? ViewController {
-                        // Теперь передаем корректный объект TrackerCoreData
+
                         viewController.addTracker(forCategory: chuseCategoriesNames.text ?? "", trackerCoreData: newTrackerCoreData)
                         viewController.dismiss(animated: true, completion: {
                             self.dismiss(animated: true, completion: nil)
@@ -594,9 +579,8 @@ extension NewHabitController {
             targetVC = targetVC?.presentingViewController
         }
         
-        print("Не удалось найти нужный ViewController.")
+        print("Не удалось найти нужный ViewController")
         dismiss(animated: true)
     }
-
 }
 

@@ -31,7 +31,7 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
     private var emojiCollectionView: UICollectionView!
     private var colorCollectionView: UICollectionView!
     let sceduleService = SceduleService.shared
-  
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -235,7 +235,6 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
             cancellButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             cancellButton.topAnchor.constraint(equalTo: colorCollectionView.bottomAnchor, constant: 16),
             cancellButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
-         //   colorCollectionView.bottomAnchor.constraint(equalTo: cancellButton.topAnchor, constant: -16)
         ])
         
         scrollView.contentSize = CGSize(width: view.frame.width, height: 1000)
@@ -254,7 +253,6 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         createButton.addTarget(self, action: #selector(didTapCreateButton), for: .touchUpInside)
         
         createButton.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
-    //    scrollView.backgroundColor = .red
         NSLayoutConstraint.activate([
             createButton.widthAnchor.constraint(equalToConstant: 166),
             createButton.heightAnchor.constraint(equalToConstant:60),
@@ -272,7 +270,7 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
             contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
-            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor) // Это нужно для корректной прокрутки
+            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
         ])
         
     }
@@ -305,7 +303,7 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        textField.resignFirstResponder() // Скрываем клавиатуру
+        textField.resignFirstResponder() // клавиатура закрытие
         return true
     }
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -364,7 +362,6 @@ extension NewIrregularEventController {
             ).isActive = true
             label.centerYAnchor.constraint(equalTo: cell.contentView.centerYAnchor).isActive = true
             
-            
             cell.contentView.addSubview(label)
             cell.contentView.layer.cornerRadius = 16
             cell.contentView.layer.masksToBounds = true
@@ -381,14 +378,12 @@ extension NewIrregularEventController {
         if collectionView == colorCollectionView {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ColorCell", for: indexPath)
             
-            // Удаляем старые подвиды, если они есть
             cell.contentView.subviews.forEach { $0.removeFromSuperview() }
             
             let color = colors[indexPath.item]
             
-            // Внешняя цветная полоска (создаем только один раз, если она еще не существует)
             let outerView = UIView()
-            outerView.frame = CGRect(x: 0, y: 0, width: 46, height: 46) // 40 + 3 + 3
+            outerView.frame = CGRect(x: 0, y: 0, width: 46, height: 46)
             outerView.layer.cornerRadius = 8
             outerView.translatesAutoresizingMaskIntoConstraints = false
             outerView.backgroundColor = color
@@ -412,7 +407,6 @@ extension NewIrregularEventController {
             innerView.translatesAutoresizingMaskIntoConstraints = false
             cell.contentView.addSubview(innerView)
             
-            // Constraints для выравнивания по центру
             NSLayoutConstraint.activate([
                 outerView.centerXAnchor.constraint(equalTo: cell.contentView.centerXAnchor),
                 outerView.centerYAnchor.constraint(equalTo: cell.contentView.centerYAnchor),
@@ -430,13 +424,11 @@ extension NewIrregularEventController {
                 innerView.heightAnchor.constraint(equalToConstant: 34)
             ])
             
-            // Проверка, выбран ли этот цвет
             if selectedColorIndex == indexPath {
-                outerView.alpha = 0.3 // Полоска с прозрачностью 30% для выбранного цвета
+                outerView.alpha = 0.3
             } else {
-                outerView.alpha = 0 // Для остальных ячеек прозрачность 0
+                outerView.alpha = 0
             }
-            
             return cell
         }
         
@@ -453,7 +445,7 @@ extension NewIrregularEventController {
             } else {
                 selectedColorIndex = indexPath
             }
-            collectionView.reloadData() // Перезагружаем данные, чтобы отобразить обновления
+            collectionView.reloadData() 
         }
         if selectedEmojiIndex == indexPath {
             selectedEmojiIndex = nil
@@ -462,6 +454,7 @@ extension NewIrregularEventController {
         }
         collectionView.reloadData()
     }
+    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         if collectionView == colorCollectionView {
             let itemsPerRow: CGFloat = 6
@@ -486,16 +479,14 @@ extension NewIrregularEventController {
         dismiss(animated: true)
     }
     
-
+    
     @objc func didTapCreateButton() {
         print("Кнопка 'Создать' нажата")
         let currentData = Date()
-
         
         let context = PersistenceController.shared.context
         var category: TrackerCategoryCoreData? = nil
         
-        // Проверка, выбрана ли категория
         if let categoryName = chuseCategoriesNames.text, !categoryName.isEmpty {
             category = CoreDataService.shared.fetchCategory(byName: categoryName, context: context)
             
@@ -504,35 +495,28 @@ extension NewIrregularEventController {
             }
         }
         
-        // Создаем трекер и сохраняем в Core Data
         let newTrackerCoreData = TrackerCoreData(context: context)
         newTrackerCoreData.id = UUID()
         newTrackerCoreData.name = name.text ?? ""
         newTrackerCoreData.color = ".colorSelection5"
         newTrackerCoreData.emoji = "❤️"
-        //newTrackerCoreData.calendar = calendarData as NSData
         newTrackerCoreData.isCompleted = false
         
-        // Привязываем категорию
         if let category = category {
             newTrackerCoreData.category = category
         }
-       
-        // Получаем сегодняшнюю дату (без времени)
+        
         let calendar = Calendar.current
         let today = Date()
         let startOfDay = calendar.startOfDay(for: today)
         
-        // Преобразуем дату в строку (формат "yyyy-MM-dd")
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let formattedDate = dateFormatter.string(from: startOfDay)
         
-        // Присваиваем строку даты в Core Data
         newTrackerCoreData.date = formattedDate
         print("Сохраняем дату в Core Data: \(formattedDate)")
         
-        // Сохраняем в Core Data
         do {
             try context.save()
             print("Трекер успешно сохранен в Core Data.")
@@ -541,27 +525,24 @@ extension NewIrregularEventController {
             return
         }
         
-        // Добавление трекера в категорию
         print("Добавляем трекер в категорию через Core Data")
         if let category = category {
             newTrackerCoreData.category = category
         }
         
-        // Обновление категории с новым трекером
         do {
             try context.save()
-            print("Категория и трекер обновлены в Core Data.")
+            print("Категория и трекер обновлены в Core Data")
         } catch {
             print("Ошибка при обновлении категории в Core Data: \(error)")
         }
         
-        // Обновление главного экрана
         var targetVC = presentingViewController
         while targetVC != nil {
             if let tabBarController = targetVC as? UITabBarController {
                 for viewController in tabBarController.viewControllers ?? [] {
                     if let viewController = viewController as? ViewController {
-                        // Передаем трекер с корректной датой
+
                         viewController.addTracker(forCategory: chuseCategoriesNames.text ?? "", trackerCoreData: newTrackerCoreData)
                         viewController.dismiss(animated: true, completion: {
                             self.dismiss(animated: true, completion: nil)
@@ -573,8 +554,7 @@ extension NewIrregularEventController {
             targetVC = targetVC?.presentingViewController
         }
         
-        print("Не удалось найти нужный ViewController.")
+        print("Не удалось найти нужный ViewController")
         dismiss(animated: true)
     }
-
 }

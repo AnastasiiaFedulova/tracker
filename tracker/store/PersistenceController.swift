@@ -14,14 +14,14 @@ class PersistenceController {
     // Контейнер Core Data
     let container: NSPersistentContainer
 
-    // Контекст, используемый для сохранения данных
+    // Контекст для сохранения данных
     var context: NSManagedObjectContext {
         return container.viewContext
     }
 
-    // Инициализация контейнера Core Data
+ 
     init(inMemory: Bool = false) {
-        container = NSPersistentContainer(name: "Model") // Укажи имя своей модели данных
+        container = NSPersistentContainer(name: "Model")
 
         if inMemory {
             container.persistentStoreDescriptions.first?.url = URL(fileURLWithPath: "/dev/null")
@@ -33,8 +33,7 @@ class PersistenceController {
             }
         }
     }
-
-    // Сохранение контекста
+    
     func saveContext() {
         let context = container.viewContext
         if context.hasChanges {
