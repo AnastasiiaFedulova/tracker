@@ -5,6 +5,7 @@
 //  Created by Anastasiia on 26.02.2025.
 //
 import UIKit
+import CoreData
 
 final class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     
@@ -68,6 +69,9 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
     let labelStar = UILabel()
     private var visibleCategories: [TrackerCategory] = []
     
+    var trackers: [TrackerCoreData] = []
+    
+    private var trackerStore: TrackerStore!
     
     var categories: [TrackerCategory] = []
     {
@@ -97,7 +101,6 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
         fatalError("init(coder:) has not been implemented")
     }
     
-    
     override func viewDidLoad() {
 //        
 //                let newTracker1 = Tracker(id:UUID(), name: "Поливать цветы", color: .colorSelection5, emoji: "❤️", calendar: [.Thursday], date: nil)
@@ -106,8 +109,17 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
 //        
 //                        addTracker(forCategory: "Домашний уют", tracker: newTracker1)
 //                        addTracker(forCategory: "Домашний уют", tracker: newTracker2)
-        
+        let context = PersistenceController.shared.context
         super.viewDidLoad()
+        loadTrackers()
+        
+        let trackerStore = TrackerStore(context: PersistenceController.shared.context)
+       if let loadedTrackers = trackerStore.fetchTrackers() {
+           self.trackers = loadedTrackers
+       }
+       
+       // Обновляем интерфейс
+       collectionView.reloadData()
         
         view.backgroundColor = .white
         loadCompletedTrackers()
@@ -216,28 +228,49 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
     private func reloadCategories() {
         let calendar = Calendar.current
         let filterWeekday = calendar.component(.weekday, from: currentData.date) - 1
-        
+        let currentDate = currentData.date
+        print("Текущая дата для фильтрации: \(currentDate)")
+
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd.MM.yyyy"
-        let currentDate = dateFormatter.string(from: currentData.date)
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let currentDate2 = dateFormatter.string(from: currentData.date)
         visibleCategories = categories.map { category in
             TrackerCategory(
                 title: category.title,
-                trakers: category.trakers.filter { trakers in
-                    trakers.calendar.contains { (weekDay: Weekday) in
+                trakers: category.trakers.filter { tracker in
+                    print("🔍 Проверяем трекер: \(tracker.name)")
+                    print("📅 Явная дата трекера: \(tracker.date)")
+                    // 🛑 Если есть конкретная дата, проверяем только её!
+                    if let trackerDateString = tracker.date {
+                        print("📅 Явная дата трекера: \(trackerDateString)")
+
+                        return trackerDateString == currentDate2
+                    }
+
+                    // ✅ Если нет даты, проверяем календарь (дни недели)
+                    if tracker.calendar.isEmpty {
+                        print("❌ Нет даты и пустой календарь, исключаем.")
+                        return false
+                    }
+
+                    let isDayOfWeek = tracker.calendar.contains { weekDay in
                         Weekday.allCases.firstIndex(of: weekDay) == filterWeekday
-                    } || trakers.date == currentDate
+                    }
+                    print("📆 Привязан к дню недели? \(isDayOfWeek)")
+                    return isDayOfWeek
                 }
             )
         }
-        
-        visibleCategories = visibleCategories.filter { category in
-            category.trakers.count > 0
-        }
+
+        // Убираем категории с пустыми трекерами
+        visibleCategories = visibleCategories.filter { !$0.trakers.isEmpty }
+        print("📊 После фильтрации: \(visibleCategories.count) категорий, \(visibleCategories.flatMap { $0.trakers }.count) трекеров")
+
         collectionView.reloadData()
-        
         updateEmptyState()
     }
+
+
     
     private func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
@@ -281,6 +314,27 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
         let trackerTypesController = TrackerTypesController()
         trackerTypesController.modalPresentationStyle = .automatic
         present(trackerTypesController, animated: true, completion: nil)
+//        let context = PersistenceController.shared.context
+//         
+//         // Создаем запрос на получение всех трекеров
+//         let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
+//         
+//         do {
+//             // Выполняем запрос для получения всех трекеров
+//             let trackers = try context.fetch(fetchRequest)
+//             
+//             // Удаляем каждый трекер из контекста
+//             for tracker in trackers {
+//                 context.delete(tracker)
+//             }
+//             
+//             // Сохраняем контекст, чтобы изменения были внесены в Core Data
+//             try context.save()
+//             print("Все трекеры успешно удалены из Core Data.")
+//             
+//         } catch {
+//             print("Ошибка при удалении трекеров: \(error)")
+//         }
     }
 }
 
@@ -295,6 +349,22 @@ extension ViewController {
         header.configure(with: visibleCategories[indexPath.section].title)
         return header
     }
+    
+    func loadTrackers() {
+        let context = PersistenceController.shared.context
+        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
+        
+        do {
+            let trackers = try context.fetch(fetchRequest)
+            self.trackers = trackers
+            updateCategoriesFromCoreData() // Обновление категорий на основе данных Core Data
+            collectionView.reloadData()  // Перезагружаем коллекцию
+        } catch {
+            print("Ошибка при загрузке данных: \(error)")
+        }
+    }
+
+
 }
 
 extension ViewController {
@@ -312,22 +382,92 @@ extension ViewController {
 
                 return CGSize(width: itemWidth, height: 148)
    }
-    func addTracker(forCategory categoryTitle: String, tracker: Tracker) {
-        print("work")
-        var updatedCategories = categories
+
+    func addTracker(forCategory categoryTitle: String, trackerCoreData: TrackerCoreData) {
+        print("Добавляем трекер в категорию через Core Data")
         
-        if let categoryIndex = updatedCategories.firstIndex(where: { $0.title == categoryTitle }) {
-            let updatedTrackers = updatedCategories[categoryIndex].trakers + [tracker]
-            
-            let updatedCategory = TrackerCategory(title: updatedCategories[categoryIndex].title, trakers: updatedTrackers)
-            
-            updatedCategories[categoryIndex] = updatedCategory
+        let context = PersistenceController.shared.context
+        let categoryStore = TrackerCategoryStore(context: context)
+        
+        // Ищем существующую категорию или создаем новую
+        let category: TrackerCategoryCoreData
+        if let existingCategory = categoryStore.fetchCategory(byTitle: categoryTitle) {
+            category = existingCategory
         } else {
-            let newCategory = TrackerCategory(title: categoryTitle, trakers: [tracker])
-            updatedCategories.append(newCategory)
+            category = TrackerCategoryCoreData(context: context)
+            category.title = categoryTitle
+            category.trackers = NSSet()  // Инициализируем пустым множеством
         }
         
-        categories = updatedCategories
+        // Добавляем трекер в категорию
+        category.addToTrackers(trackerCoreData)
+        
+        // Сохраняем обновленные данные
+        do {
+            try context.save()
+            print("Категория и трекер обновлены в Core Data.")
+            updateCategoriesFromCoreData() // Обновляем категорию
+            collectionView.reloadData() // Перезагружаем коллекцию
+        } catch {
+            print("Ошибка сохранения в Core Data: \(error)")
+        }
+        
+        // Обновляем UI-категории
+        updateCategoriesFromCoreData()
+    }
+    
+    
+    func updateCategoriesFromCoreData() {
+        let context = PersistenceController.shared.context
+        let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
+
+        do {
+            let fetchedCategories = try context.fetch(fetchRequest)
+            
+            // Преобразуем в массив TrackerCategory
+            categories = fetchedCategories.map { category in
+                // Обрабатываем trackers с использованием безопасного развертывания
+                let trackers: [Tracker] = (category.trackers as? Set<TrackerCoreData>)?.compactMap { coreDataTracker in
+                    // Обрабатываем coreDataTracker, используя безопасное развертывание
+                    guard let id = coreDataTracker.id else {
+                        // Если id отсутствует, возвращаем nil для этого трекера
+                        print("Трекер без id, пропускаем.")
+                        return nil
+                    }
+
+                    let name = coreDataTracker.name ?? "Без названия"  // Если name nil, используем дефолтное значение
+                    let emoji = coreDataTracker.emoji ?? "❓"  // Если emoji nil, используем дефолтное значение
+                    let calendarData = coreDataTracker.calendar as? Data
+                    let calendar = decodeCalendar(from: calendarData)  // Здесь нужно обработать, если calendarData nil
+
+                    return Tracker(
+                        id: id,
+                        name: name,
+                        color: .colorSelection5, // Преобразование цвета
+                        emoji: emoji,
+                        calendar: calendar,
+                        date: coreDataTracker.date
+                    )
+                } ?? []  // Если category.trackers nil, вернем пустой массив
+
+                // Обрабатываем title с использованием дефолтного значения
+                let title = category.title ?? "Без категории"  // Если title nil, используем дефолтное значение
+                return TrackerCategory(title: title, trakers: trackers)
+            }
+        } catch {
+            print("Ошибка загрузки категорий из Core Data: \(error)")
+        }
+    }
+
+
+    func decodeCalendar(from data: Data?) -> [Weekday] {
+        guard let data = data else { return [] }
+        do {
+            return try JSONDecoder().decode([Weekday].self, from: data)
+        } catch {
+            print("Ошибка декодирования календаря: \(error)")
+            return []
+        }
     }
 }
 

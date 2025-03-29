@@ -1,7 +1,6 @@
 import UIKit
 
-
-final class CategoriesController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+final class CategoriesController: UIViewController, UITableViewDataSource, UITableViewDelegate {    
     
     let categoriesServise = CategoriesServise.shared
     
@@ -17,6 +16,7 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
+        
         
         setupUI()
         showCategories()

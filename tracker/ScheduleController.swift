@@ -120,7 +120,37 @@ final class ScheduleController: UIViewController, UITableViewDataSource, UITable
             }
         }
     }
-    
+//    @objc private func switchChanged(_ sender: UISwitch) {
+//        print("switchChanged вызван")
+//
+//        if let cell = sender.superview as? UITableViewCell,
+//           let indexPath = tableView.indexPath(for: cell) {
+//            
+//            let dayString = tableData[indexPath.section][indexPath.row]
+//            print("День из tableData: \(dayString)")
+//
+//            guard let weekday = weekDayMapping[dayString] else {
+//                print("Ошибка: \(dayString) нельзя преобразовать в Weekday")
+//                return
+//            }
+//
+//            if sender.isOn {
+//                if !sceduleService.selectedWeekdays.contains(weekday) {
+//                    sceduleService.selectedWeekdays.append(weekday)
+//                    print("Добавлен день: \(weekday)")
+//                }
+//            } else {
+//                if let index = sceduleService.selectedWeekdays.firstIndex(of: weekday) {
+//                    sceduleService.selectedWeekdays.remove(at: index)
+//                    print("Удалён день: \(weekday)")
+//                }
+//            }
+//            print("Текущие выбранные дни: \(sceduleService.selectedWeekdays)")
+//        }
+//    }
+
+
+
     @objc private func didTapDoneButton() {
         let selectedWeekdays = sceduleService.selectedWeekdays.compactMap { Weekday(rawValue: $0.rawValue) }
         delegate?.didSelectSchedule(selectedWeekdays)
