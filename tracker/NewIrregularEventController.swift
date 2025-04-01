@@ -19,6 +19,9 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
     private let tableData = ["Категория"]
     private var selectedEmojiIndex: IndexPath?
     private var selectedColorIndex: IndexPath?
+    var selectedEmoji: String?
+    var selectedColors: String?
+    let createButton = UIButton(type: .system)
     
     private let emogies = [ "🙂", "😻", "🌺", "🐶", "❤️", "😱", "😇", "😡", "🥶", "🤔", "🙌", "🍔", "🥦", "🏓", "🥇", "🎸", "🏝", "😪"]
     
@@ -45,6 +48,7 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
                 guard let self = self else { return }
                 
                 chuseCategoriesNames.text = categoriesServise.selectedCategory
+                self.updateCreateButtonState()
             }
         
         setupClearButton()
@@ -132,7 +136,7 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         tableView.addSubview(chuseCategoriesNames)
         
         NSLayoutConstraint.activate([
-            chuseCategoriesNames.leadingAnchor.constraint(equalTo: tableView.leadingAnchor, constant: 16),
+            chuseCategoriesNames.leadingAnchor.constraint(equalTo: tableView.leadingAnchor, constant: 20),
             chuseCategoriesNames.topAnchor.constraint(equalTo: categories.bottomAnchor, constant: 2),
         ])
         
@@ -240,7 +244,7 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         scrollView.contentSize = CGSize(width: view.frame.width, height: 1000)
         scrollView.showsVerticalScrollIndicator = true
         
-        let createButton = UIButton(type: .system)
+        
         createButton.setTitle("Создать", for: .normal)
         createButton.setTitleColor(.white, for: .normal)
         createButton.backgroundColor = .greyButton
@@ -295,6 +299,7 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
     }
     @objc private func textFieldDidChange() {
         clearButton.isHidden = name.text?.isEmpty ?? true
+        updateCreateButtonState()
     }
     
     @objc private func clearTextField() {
@@ -306,10 +311,25 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         textField.resignFirstResponder() // клавиатура закрытие
         return true
     }
+    
+    func updateCreateButtonState() {
+        let isFormValid = !(name.text?.isEmpty ?? true) &&
+        !(chuseCategoriesNames.text?.isEmpty ?? true) &&
+        selectedEmoji != nil &&
+        selectedColor != nil
+        
+        if isFormValid {
+            createButton.isEnabled = true
+            createButton.backgroundColor = .black
+        } else {
+            createButton.isEnabled = false
+            createButton.backgroundColor = .greyButton
+        }
+    }
+    
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 75
     }
-    
     
     @objc func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return tableData.count
@@ -383,7 +403,7 @@ extension NewIrregularEventController {
             let color = colors[indexPath.item]
             
             let outerView = UIView()
-            outerView.frame = CGRect(x: 0, y: 0, width: 46, height: 46)
+            outerView.frame = CGRect(x: 0, y: 0, width: 52, height: 52)
             outerView.layer.cornerRadius = 8
             outerView.translatesAutoresizingMaskIntoConstraints = false
             outerView.backgroundColor = color
@@ -391,7 +411,7 @@ extension NewIrregularEventController {
             
             // Белая полоска
             let middleView = UIView()
-            middleView.frame = CGRect(x: 0, y: 0, width: 40, height: 40)
+            middleView.frame = CGRect(x: 0, y: 0, width: 46, height: 46)
             middleView.layer.cornerRadius = 8
             middleView.alpha = 1
             middleView.backgroundColor = .white
@@ -400,7 +420,7 @@ extension NewIrregularEventController {
             
             // Внутренний цветной квадрат
             let innerView = UIView()
-            innerView.frame = CGRect(x: 0, y: 0, width: 34, height: 34) // 40 - 3 - 3
+            innerView.frame = CGRect(x: 0, y: 0, width: 40, height: 40)
             innerView.layer.cornerRadius = 8
             innerView.alpha = 1
             innerView.backgroundColor = color
@@ -410,22 +430,24 @@ extension NewIrregularEventController {
             NSLayoutConstraint.activate([
                 outerView.centerXAnchor.constraint(equalTo: cell.contentView.centerXAnchor),
                 outerView.centerYAnchor.constraint(equalTo: cell.contentView.centerYAnchor),
-                outerView.widthAnchor.constraint(equalToConstant: 46),
-                outerView.heightAnchor.constraint(equalToConstant: 46),
+                outerView.widthAnchor.constraint(equalToConstant: 52),
+                outerView.heightAnchor.constraint(equalToConstant: 52),
                 
                 middleView.centerXAnchor.constraint(equalTo: outerView.centerXAnchor),
                 middleView.centerYAnchor.constraint(equalTo: outerView.centerYAnchor),
-                middleView.widthAnchor.constraint(equalToConstant: 40),
-                middleView.heightAnchor.constraint(equalToConstant: 40),
+                middleView.widthAnchor.constraint(equalToConstant: 46),
+                middleView.heightAnchor.constraint(equalToConstant: 46),
                 
                 innerView.centerXAnchor.constraint(equalTo: middleView.centerXAnchor),
                 innerView.centerYAnchor.constraint(equalTo: middleView.centerYAnchor),
-                innerView.widthAnchor.constraint(equalToConstant: 34),
-                innerView.heightAnchor.constraint(equalToConstant: 34)
+                innerView.widthAnchor.constraint(equalToConstant: 40),
+                innerView.heightAnchor.constraint(equalToConstant: 40)
             ])
             
             if selectedColorIndex == indexPath {
                 outerView.alpha = 0.3
+                selectedColors = colors[indexPath.item].toHex()
+                updateCreateButtonState()
             } else {
                 outerView.alpha = 0
             }
@@ -438,22 +460,28 @@ extension NewIrregularEventController {
 
 extension NewIrregularEventController {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        
         if collectionView == colorCollectionView {
             if selectedColorIndex == indexPath {
                 selectedColorIndex = nil
+                selectedColor = nil
             } else {
                 selectedColorIndex = indexPath
+                selectedColor = colors[indexPath.item] // Сохраняем цвет в переменную
             }
-            collectionView.reloadData() 
+        } else if collectionView == emojiCollectionView {
+            if selectedEmojiIndex == indexPath {
+                selectedEmojiIndex = nil
+                selectedEmoji = nil
+            } else {
+                selectedEmojiIndex = indexPath
+                selectedEmoji = emogies[indexPath.item] // Сохраняем эмодзи в переменную
+            }
         }
-        if selectedEmojiIndex == indexPath {
-            selectedEmojiIndex = nil
-        } else {
-            selectedEmojiIndex = indexPath
-        }
+        
         collectionView.reloadData()
+        updateCreateButtonState()
     }
+    
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         if collectionView == colorCollectionView {
@@ -498,8 +526,8 @@ extension NewIrregularEventController {
         let newTrackerCoreData = TrackerCoreData(context: context)
         newTrackerCoreData.id = UUID()
         newTrackerCoreData.name = name.text ?? ""
-        newTrackerCoreData.color = ".colorSelection5"
-        newTrackerCoreData.emoji = "❤️"
+        newTrackerCoreData.color = selectedColors
+        newTrackerCoreData.emoji = selectedEmoji
         newTrackerCoreData.isCompleted = false
         
         if let category = category {
@@ -542,7 +570,7 @@ extension NewIrregularEventController {
             if let tabBarController = targetVC as? UITabBarController {
                 for viewController in tabBarController.viewControllers ?? [] {
                     if let viewController = viewController as? ViewController {
-
+                        
                         viewController.addTracker(forCategory: chuseCategoriesNames.text ?? "", trackerCoreData: newTrackerCoreData)
                         viewController.dismiss(animated: true, completion: {
                             self.dismiss(animated: true, completion: nil)

@@ -8,25 +8,22 @@
 import Foundation
 import CoreData
 
-class PersistenceController {
+final class PersistenceController {
     static let shared = PersistenceController()
 
-    // Контейнер Core Data
     let container: NSPersistentContainer
 
-    // Контекст для сохранения данных
     var context: NSManagedObjectContext {
         return container.viewContext
     }
-
- 
+    
     init(inMemory: Bool = false) {
         container = NSPersistentContainer(name: "Model")
-
+        
         if inMemory {
             container.persistentStoreDescriptions.first?.url = URL(fileURLWithPath: "/dev/null")
         }
-
+        
         container.loadPersistentStores { description, error in
             if let error = error as NSError? {
                 fatalError("Unresolved error \(error), \(error.userInfo)")

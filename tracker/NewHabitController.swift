@@ -11,8 +11,24 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
     private var selectedWeekdays: [Weekday] = []
     
     func didSelectSchedule(_ days: [Weekday]) {
+        print("Метод didSelectSchedule вызывается с днями:", days)
+        
         selectedWeekdays = days
+        
+        let allWeekdays: [Weekday] = [.Monday, .Tuesday, .Wednesday, .Thursday, .Friday, .Saturday, .Sunday]
+        
+        if Set(days) == Set(allWeekdays) {
+            chuseScheduleLabel.text = "Все дни"
+        } else {
+            let shortNames = days.map { $0.shortName }.joined(separator: ", ")
+            DispatchQueue.main.async {
+                self.chuseScheduleLabel.text = shortNames
+                self.view.layoutIfNeeded()
+            }
+            updateCreateButtonState()
+        }
     }
+    
     
     @objc private func openSchedule() {
         let scheduleVC = ScheduleController()
@@ -31,7 +47,9 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
     let categoriesServise = CategoriesServise.shared
     private var selectedEmojiIndex: IndexPath?
     private var selectedColorIndex: IndexPath?
-    
+    var selectedEmoji: String?
+    var selectedColors: String?
+    let createButton = UIButton(type: .system)
     let sceduleService = SceduleService.shared
     
     private let emogies = [ "🙂", "😻", "🌺", "🐶", "❤️", "😱", "😇", "😡", "🥶", "🤔", "🙌", "🍔", "🥦", "🏓", "🥇", "🎸", "🏝", "😪"]
@@ -58,6 +76,7 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
                 guard let self = self else { return }
                 
                 chuseCategoriesNames.text = categoriesServise.selectedCategory
+                self.updateCreateButtonState()
             }
         
         let scrollView = UIScrollView()
@@ -159,7 +178,7 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
         tableView.addSubview(chuseCategoriesNames)
         
         NSLayoutConstraint.activate([
-            chuseCategoriesNames.leadingAnchor.constraint(equalTo: tableView.leadingAnchor, constant: 18),
+            chuseCategoriesNames.leadingAnchor.constraint(equalTo: tableView.leadingAnchor, constant: 20),
             chuseCategoriesNames.topAnchor.constraint(equalTo: categories.bottomAnchor, constant: 2)
         ])
         
@@ -173,14 +192,14 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
             scheduleLabel.topAnchor.constraint(equalTo: categories.bottomAnchor, constant: 51)
         ])
         
-        chuseScheduleLabel.text = "fff"
-        chuseScheduleLabel.textColor = .clear
+        
+        chuseScheduleLabel.textColor = .gray
         chuseScheduleLabel.translatesAutoresizingMaskIntoConstraints = false
         tableView.addSubview( chuseScheduleLabel)
         
         
         NSLayoutConstraint.activate([
-            chuseScheduleLabel.leadingAnchor.constraint(equalTo: tableView.leadingAnchor, constant: 18),
+            chuseScheduleLabel.leadingAnchor.constraint(equalTo: tableView.leadingAnchor, constant: 20),
             chuseScheduleLabel.topAnchor.constraint(equalTo: scheduleLabel.bottomAnchor, constant: 2)
         ])
         
@@ -262,11 +281,12 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
             cancellButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
         ])
         
-        let createButton = UIButton(type: .system)
         createButton.setTitle("Создать", for: .normal)
         createButton.setTitleColor(.white, for: .normal)
         createButton.backgroundColor = .greyButton
         createButton.setContentCompressionResistancePriority(.required, for: .vertical)
+        createButton.isEnabled = false
+        
         
         createButton.layer.cornerRadius = 16
         createButton.translatesAutoresizingMaskIntoConstraints = false
@@ -312,6 +332,7 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
     }
     @objc private func textFieldDidChange() {
         clearButton.isHidden = name.text?.isEmpty ?? true
+        updateCreateButtonState()
     }
     
     @objc private func clearTextField() {
@@ -323,11 +344,25 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
         textField.resignFirstResponder() // Скрываем клавиатуру
         return true
     }
+    func updateCreateButtonState() {
+        let isFormValid = !(name.text?.isEmpty ?? true) &&
+        !(chuseCategoriesNames.text?.isEmpty ?? true) &&
+        !(chuseScheduleLabel.text?.isEmpty ?? true) &&
+        selectedEmoji != nil &&
+        selectedColor != nil
+        
+        if isFormValid {
+            createButton.isEnabled = true
+            createButton.backgroundColor = .black
+        } else {
+            createButton.isEnabled = false
+            createButton.backgroundColor = .greyButton
+        }
+    }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 75
     }
-    
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return tableData[section].count
@@ -355,6 +390,9 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
             let categoriesController = CategoriesController()
             present(categoriesController, animated: true)
         } else if selectedOption == "Расписание" {
+            let scheduleVC = ScheduleController()
+            scheduleVC.delegate = self  // Назначаем делегата
+            present(scheduleVC, animated: true)
             let scheduleController = ScheduleController()
             present(scheduleController, animated: true)
         }
@@ -370,7 +408,6 @@ extension NewHabitController {
         }
         return 0
     }
-    
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if collectionView == emojiCollectionView {
@@ -411,7 +448,7 @@ extension NewHabitController {
             let color = colors[indexPath.item]
             
             let outerView = UIView()
-            outerView.frame = CGRect(x: 0, y: 0, width: 46, height: 46)
+            outerView.frame = CGRect(x: 0, y: 0, width: 52, height: 52)
             outerView.layer.cornerRadius = 8
             outerView.translatesAutoresizingMaskIntoConstraints = false
             outerView.backgroundColor = color
@@ -419,7 +456,7 @@ extension NewHabitController {
             
             // Белая полоска
             let middleView = UIView()
-            middleView.frame = CGRect(x: 0, y: 0, width: 40, height: 40)
+            middleView.frame = CGRect(x: 0, y: 0, width: 46, height: 46)
             middleView.layer.cornerRadius = 8
             middleView.alpha = 1
             middleView.backgroundColor = .white
@@ -428,32 +465,34 @@ extension NewHabitController {
             
             // Внутренний цветной квадрат
             let innerView = UIView()
-            innerView.frame = CGRect(x: 0, y: 0, width: 34, height: 34)
+            innerView.frame = CGRect(x: 0, y: 0, width: 40, height: 40)
             innerView.layer.cornerRadius = 8
             innerView.alpha = 1
             innerView.backgroundColor = color
             innerView.translatesAutoresizingMaskIntoConstraints = false
             cell.contentView.addSubview(innerView)
-
+            
             NSLayoutConstraint.activate([
                 outerView.centerXAnchor.constraint(equalTo: cell.contentView.centerXAnchor),
                 outerView.centerYAnchor.constraint(equalTo: cell.contentView.centerYAnchor),
-                outerView.widthAnchor.constraint(equalToConstant: 46),
-                outerView.heightAnchor.constraint(equalToConstant: 46),
+                outerView.widthAnchor.constraint(equalToConstant: 52),
+                outerView.heightAnchor.constraint(equalToConstant: 52),
                 
                 middleView.centerXAnchor.constraint(equalTo: outerView.centerXAnchor),
                 middleView.centerYAnchor.constraint(equalTo: outerView.centerYAnchor),
-                middleView.widthAnchor.constraint(equalToConstant: 40),
-                middleView.heightAnchor.constraint(equalToConstant: 40),
+                middleView.widthAnchor.constraint(equalToConstant: 46),
+                middleView.heightAnchor.constraint(equalToConstant: 46),
                 
                 innerView.centerXAnchor.constraint(equalTo: middleView.centerXAnchor),
                 innerView.centerYAnchor.constraint(equalTo: middleView.centerYAnchor),
-                innerView.widthAnchor.constraint(equalToConstant: 34),
-                innerView.heightAnchor.constraint(equalToConstant: 34)
+                innerView.widthAnchor.constraint(equalToConstant: 40),
+                innerView.heightAnchor.constraint(equalToConstant: 40)
             ])
             
             if selectedColorIndex == indexPath {
                 outerView.alpha = 0.3
+                selectedColors = colors[indexPath.item].toHex()
+                updateCreateButtonState()
             } else {
                 outerView.alpha = 0
             }
@@ -467,22 +506,28 @@ extension NewHabitController {
 
 extension NewHabitController {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        
         if collectionView == colorCollectionView {
             if selectedColorIndex == indexPath {
                 selectedColorIndex = nil
+                selectedColor = nil
             } else {
                 selectedColorIndex = indexPath
+                selectedColor = colors[indexPath.item] // Сохраняем цвет в переменную
             }
-            collectionView.reloadData()
+        } else if collectionView == emojiCollectionView {
+            if selectedEmojiIndex == indexPath {
+                selectedEmojiIndex = nil
+                selectedEmoji = nil
+            } else {
+                selectedEmojiIndex = indexPath
+                selectedEmoji = emogies[indexPath.item] // Сохраняем эмодзи в переменную
+            }
         }
-        if selectedEmojiIndex == indexPath {
-            selectedEmojiIndex = nil
-        } else {
-            selectedEmojiIndex = indexPath
-        }
+        
         collectionView.reloadData()
+        updateCreateButtonState()
     }
+    
     
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -545,15 +590,15 @@ extension NewHabitController {
         let newTrackerCoreData = TrackerCoreData(context: context)
         newTrackerCoreData.id = UUID()
         newTrackerCoreData.name = name.text ?? ""
-        newTrackerCoreData.color = ".colorSelection5"
-        newTrackerCoreData.emoji = "❤️"
+        newTrackerCoreData.color = selectedColors
+        newTrackerCoreData.emoji = selectedEmoji
         newTrackerCoreData.calendar = calendarData as NSData
         newTrackerCoreData.isCompleted = isCompleted
-
+        
         if let category = category {
             newTrackerCoreData.category = category
         }
-
+        
         do {
             try context.save()
             print("Трекер успешно сохранен в Core Data")
@@ -567,7 +612,7 @@ extension NewHabitController {
             if let tabBarController = targetVC as? UITabBarController {
                 for viewController in tabBarController.viewControllers ?? [] {
                     if let viewController = viewController as? ViewController {
-
+                        
                         viewController.addTracker(forCategory: chuseCategoriesNames.text ?? "", trackerCoreData: newTrackerCoreData)
                         viewController.dismiss(animated: true, completion: {
                             self.dismiss(animated: true, completion: nil)
@@ -582,5 +627,6 @@ extension NewHabitController {
         print("Не удалось найти нужный ViewController")
         dismiss(animated: true)
     }
+    
 }
 

@@ -1,11 +1,9 @@
-//
 //  ViewController.swift
 //  tracker
 //
 //  Created by Anastasiia on 26.02.2025.
 //
 import UIKit
-
 
 final class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     
@@ -102,15 +100,20 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
     }
     
     override func viewDidLoad() {
+        trackerStore = TrackerStore(context: PersistenceController.shared.context)
+        
+        trackerStore.onUpdate = { [weak self] in
+            DispatchQueue.main.async {
+                self?.updateCategoriesFromCoreData()
+                self?.reloadCategories()
+            }
+        }
         
         let context = PersistenceController.shared.context
         super.viewDidLoad()
         loadTrackers()
         
-        let trackerStore = TrackerStore(context: PersistenceController.shared.context)
-        if let loadedTrackers = trackerStore.fetchTrackers() {
-            self.trackers = loadedTrackers
-        }
+        self.trackers = trackerStore.getTrackers()
         
         collectionView.reloadData()
         
@@ -218,6 +221,11 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
         reloadCategories()
     }
     
+    @objc private func reloadData() {
+        self.trackers = trackerStore.getTrackers()
+        collectionView.reloadData()
+    }
+    
     private func reloadCategories() {
         let calendar = Calendar.current
         let filterWeekday = calendar.component(.weekday, from: currentData.date) - 1
@@ -231,32 +239,25 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
             TrackerCategory(
                 title: category.title,
                 trakers: category.trakers.filter { tracker in
-                   // print("Проверяем трекер: \(tracker.name)")
-                   // print("Явная дата трекера: \(String(describing: tracker.date))")
-
+                    
                     if let trackerDateString = tracker.date {
-                     //   print("Явная дата трекера: \(trackerDateString)")
                         
                         return trackerDateString == currentDate2
                     }
-
+                    
                     if tracker.calendar.isEmpty {
-                      //  print("Нет даты и пустой календарь, исключаем.")
                         return false
                     }
                     
                     let isDayOfWeek = tracker.calendar.contains { weekDay in
                         Weekday.allCases.firstIndex(of: weekDay) == filterWeekday
                     }
-                   // print("Привязан к дню недели? \(isDayOfWeek)")
                     return isDayOfWeek
                 }
             )
         }
         
         visibleCategories = visibleCategories.filter { !$0.trakers.isEmpty }
-       // print("После фильтрации: \(visibleCategories.count) категорий, \(visibleCategories.flatMap { $0.trakers }.count) трекеров")
-        
         collectionView.reloadData()
         updateEmptyState()
     }
@@ -303,27 +304,6 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
         let trackerTypesController = TrackerTypesController()
         trackerTypesController.modalPresentationStyle = .automatic
         present(trackerTypesController, animated: true, completion: nil)
-        //        let context = PersistenceController.shared.context
-        //
-        //         // Создаем запрос на получение всех трекеров
-        //         let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
-        //
-        //         do {
-        //             // Выполняем запрос для получения всех трекеров
-        //             let trackers = try context.fetch(fetchRequest)
-        //
-        //             // Удаляем каждый трекер из контекста
-        //             for tracker in trackers {
-        //                 context.delete(tracker)
-        //             }
-        //
-        //             // Сохраняем контекст, чтобы изменения были внесены в Core Data
-        //             try context.save()
-        //             print("Все трекеры успешно удалены из Core Data.")
-        //
-        //         } catch {
-        //             print("Ошибка при удалении трекеров: \(error)")
-        //         }
     }
 }
 
@@ -340,8 +320,7 @@ extension ViewController {
     }
     
     func loadTrackers() {
-        var trackers = TrackerStore.shared.fetchTrackers()
-        self.trackers = trackers ?? []
+        self.trackers = trackerStore.getTrackers()
         updateCategoriesFromCoreData()
         collectionView.reloadData()
     }
@@ -368,7 +347,7 @@ extension ViewController {
         
         let context = PersistenceController.shared.context
         let categoryStore = TrackerCategoryStore(context: context)
-
+        
         let category: TrackerCategoryCoreData
         if let existingCategory = categoryStore.fetchCategory(byTitle: categoryTitle) {
             category = existingCategory
@@ -377,9 +356,9 @@ extension ViewController {
             category.title = categoryTitle
             category.trackers = NSSet()
         }
-
+        
         category.addToTrackers(trackerCoreData)
-
+        
         do {
             try context.save()
             print("Категория и трекер обновлены в Core Data")
@@ -388,7 +367,7 @@ extension ViewController {
         } catch {
             print("Ошибка сохранения в Core Data: \(error)")
         }
-
+        
         updateCategoriesFromCoreData()
     }
     
@@ -399,37 +378,37 @@ extension ViewController {
             let fetchedCategories = TrackerCategoryStore.shared.fetchCategories()
             
             categories = fetchedCategories.map { category in
-
+                
                 let trackers: [Tracker] = (category.trackers as? Set<TrackerCoreData>)?.compactMap { coreDataTracker in
                     guard let id = coreDataTracker.id else {
-
+                        
                         print("Трекер без id пропускаем")
-                        return nil
+                        fatalError("Произошла критическая ошибка!")
                     }
                     
                     let name = coreDataTracker.name ?? "Без названия"
                     let emoji = coreDataTracker.emoji ?? "❓"
+                    let color = coreDataTracker.color ?? ""
                     let calendarData = coreDataTracker.calendar as? Data
                     let calendar = decodeCalendar(from: calendarData)
                     
                     return Tracker(
                         id: id,
                         name: name,
-                        color: .colorSelection5,
+                        color: UIColor.fromHex(hex: color),
                         emoji: emoji,
                         calendar: calendar,
                         date: coreDataTracker.date
                     )
                 } ?? []
                 
-                let title = category.title ?? "Без категории"  
+                let title = category.title ?? "Без категории"
                 return TrackerCategory(title: title, trakers: trackers)
             }
         } catch {
             print("Ошибка загрузки категорий из Core Data: \(error)")
         }
     }
-    
     
     func decodeCalendar(from data: Data?) -> [Weekday] {
         guard let data = data else { return [] }
@@ -441,7 +420,6 @@ extension ViewController {
         }
     }
 }
-
 
 final class TrackerCell: UICollectionViewCell {
     private let emojiLabel = UILabel()
@@ -496,7 +474,7 @@ final class TrackerCell: UICollectionViewCell {
         
         let image = UIImage(named: "Property1")?.withRenderingMode(.alwaysTemplate)
         doneButton.setImage(image, for: .normal)
-        doneButton.tintColor = .colorSelection5
+        doneButton.tintColor = .clear
         doneButton.translatesAutoresizingMaskIntoConstraints = false
         doneButton.addTarget(self, action: #selector(toggleCompletion), for: .touchUpInside)
         
@@ -613,6 +591,7 @@ final class TrackerCell: UICollectionViewCell {
         titleLabel.text = tracker.name
         emojiLabel.text = tracker.emoji
         background.backgroundColor = tracker.color
+        doneButton.tintColor = tracker.color
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd.MM.yyyy"
@@ -670,6 +649,3 @@ final class CategoryHeaderView: UICollectionReusableView {
         titleLabel.text = title
     }
 }
-
-
-

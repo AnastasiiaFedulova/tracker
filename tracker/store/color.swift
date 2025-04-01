@@ -8,7 +8,7 @@
 import UIKit
 
 extension UIColor {
-
+    
     func toHex() -> String {
         guard let components = self.cgColor.components else { return "#FFFFFF" }
         let red = components[0]
@@ -36,6 +36,6 @@ extension UIColor {
             return UIColor(red: red, green: green, blue: blue, alpha: 1.0)
         }
         
-        return UIColor.white 
+        return UIColor.white
     }
 }

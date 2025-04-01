@@ -12,6 +12,8 @@ protocol ScheduleControllerDelegate: AnyObject {
 }
 
 final class ScheduleController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+    
+    
     let sceduleService = SceduleService.shared
     
     weak var delegate: ScheduleControllerDelegate?
@@ -41,7 +43,10 @@ final class ScheduleController: UIViewController, UITableViewDataSource, UITable
     
     
     override func viewDidLoad() {
+        
         super.viewDidLoad()
+        
+        sceduleService.selectedWeekdays = []
         
         view.backgroundColor = .white
         
@@ -103,7 +108,10 @@ final class ScheduleController: UIViewController, UITableViewDataSource, UITable
         return 75
     }
     
+    
     @objc private func switchChanged(_ sender: UISwitch) {
+        sender.onTintColor = sender.isOn ? .blue : nil
+        
         if let cell = sender.superview as? UITableViewCell,
            let indexPath = tableView.indexPath(for: cell) {
             let day = tableData[indexPath.section][indexPath.row]
@@ -111,20 +119,25 @@ final class ScheduleController: UIViewController, UITableViewDataSource, UITable
             if sender.isOn {
                 if let weekday = Weekday(rawValue: day) {
                     sceduleService.selectedWeekdays.append(weekday)
-                    print(sceduleService.selectedWeekdays)
+                    print("Добавлен день: \(weekday), выбранные дни: \(sceduleService.selectedWeekdays)")
                 }
             } else {
                 if let weekday = Weekday(rawValue: day),
                    let index = sceduleService.selectedWeekdays.firstIndex(of: weekday) {
                     sceduleService.selectedWeekdays.remove(at: index)
+                    print("Удалён день: \(weekday), выбранные дни: \(sceduleService.selectedWeekdays)")
                 }
             }
         }
     }
-    
     @objc private func didTapDoneButton() {
         let selectedWeekdays = sceduleService.selectedWeekdays.compactMap { Weekday(rawValue: $0.rawValue) }
-        delegate?.didSelectSchedule(selectedWeekdays)
+        
+        if let delegate = delegate {
+            delegate.didSelectSchedule(selectedWeekdays)
+        } else {
+            print("Делегат не назначен")
+        }
         dismiss(animated: true)
     }
 }
