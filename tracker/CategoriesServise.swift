@@ -23,8 +23,8 @@ final class CategoriesServise {
         saveCategories()
         
         NotificationCenter.default.post(name: CategoriesServise.didChangeNotification, object: nil)
-        
     }
+    
     func updateSelectedCategory(_ category: String) {
         selectedCategory = category
     }

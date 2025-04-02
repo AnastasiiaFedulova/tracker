@@ -27,6 +27,8 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
             }
             updateCreateButtonState()
         }
+        scheduleLabelTopConstraint?.isActive = false
+        scheduleLabelTopConstraintSmall?.isActive = true
     }
     
     
@@ -35,6 +37,7 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
         scheduleVC.delegate = self
         present(scheduleVC, animated: true)
     }
+    
     let chuseScheduleLabel = UILabel()
     let scheduleLabel = UILabel()
     let categoriesController = CategoriesController()
@@ -51,6 +54,13 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
     var selectedColors: String?
     let createButton = UIButton(type: .system)
     let sceduleService = SceduleService.shared
+    
+    private var categoriesTopConstraint: NSLayoutConstraint?
+    private var categoriesTopConstraintSmall: NSLayoutConstraint?
+    
+    private var scheduleLabelTopConstraint: NSLayoutConstraint?
+    private var scheduleLabelTopConstraintSmall: NSLayoutConstraint?
+    
     
     private let emogies = [ "🙂", "😻", "🌺", "🐶", "❤️", "😱", "😇", "😡", "🥶", "🤔", "🙌", "🍔", "🥦", "🏓", "🥇", "🎸", "🏝", "😪"]
     
@@ -77,6 +87,9 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
                 
                 chuseCategoriesNames.text = categoriesServise.selectedCategory
                 self.updateCreateButtonState()
+                
+                categoriesTopConstraint?.isActive = false
+                categoriesTopConstraintSmall?.isActive = true
             }
         
         let scrollView = UIScrollView()
@@ -87,7 +100,6 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
         contentView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(contentView)
         
-        tableData = [["\(categories.text ?? "Категория")"], ["Расписание"]]
         setupClearButton()
         name.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         
@@ -145,6 +157,7 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
             emojiLabel.topAnchor.constraint(equalTo: name.bottomAnchor, constant: 206)
         ])
         
+        tableView.separatorColor = .greyButton
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
@@ -155,16 +168,25 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
         tableView.isScrollEnabled = false
         contentView.addSubview(tableView)
         
+        
         NSLayoutConstraint.activate([
             tableView.widthAnchor.constraint(equalToConstant: 343),
             tableView.heightAnchor.constraint(equalToConstant: CGFloat(tableData.flatMap { $0 }.count) * 75),
+            //       tableView.heightAnchor.constraint(equalToConstant: 75 * 2),
             tableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             tableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             tableView.topAnchor.constraint(equalTo: name.bottomAnchor, constant: 20)
         ])
         
+        
+        categoriesTopConstraint = categories.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 27)
+        categoriesTopConstraintSmall = categories.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 15)
+        scheduleLabelTopConstraint = scheduleLabel.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 101)
+        scheduleLabelTopConstraintSmall = scheduleLabel.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 90)
+        
         categories.text = "Категория"
-        categories.textColor = .clear
+        categories.textColor = .forText
+        categories.font = UIFont.systemFont(ofSize: 17, weight: .regular)
         categories.translatesAutoresizingMaskIntoConstraints = false
         tableView.addSubview(categories)
         
@@ -173,33 +195,34 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
             categories.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 27)
         ])
         
-        chuseCategoriesNames.textColor = .gray
+        chuseCategoriesNames.textColor = .greyButton
+        chuseCategoriesNames.font = UIFont.systemFont(ofSize: 17, weight: .regular)
         chuseCategoriesNames.translatesAutoresizingMaskIntoConstraints = false
         tableView.addSubview(chuseCategoriesNames)
         
         NSLayoutConstraint.activate([
-            chuseCategoriesNames.leadingAnchor.constraint(equalTo: tableView.leadingAnchor, constant: 20),
+            chuseCategoriesNames.leadingAnchor.constraint(equalTo: tableView.leadingAnchor, constant: 16),
             chuseCategoriesNames.topAnchor.constraint(equalTo: categories.bottomAnchor, constant: 2)
         ])
         
         scheduleLabel.text = "Расписание"
-        scheduleLabel.textColor = .clear
+        scheduleLabel.textColor = .forText
+        scheduleLabel.font = UIFont.systemFont(ofSize: 17, weight: .regular)
         scheduleLabel.translatesAutoresizingMaskIntoConstraints = false
         tableView.addSubview(scheduleLabel)
         
         NSLayoutConstraint.activate([
             scheduleLabel.leadingAnchor.constraint(equalTo: tableView.leadingAnchor, constant: 16),
-            scheduleLabel.topAnchor.constraint(equalTo: categories.bottomAnchor, constant: 51)
+            scheduleLabel.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 101)
         ])
         
-        
-        chuseScheduleLabel.textColor = .gray
+        chuseScheduleLabel.textColor = .greyButton
+        chuseScheduleLabel.font = UIFont.systemFont(ofSize: 17, weight: .regular)
         chuseScheduleLabel.translatesAutoresizingMaskIntoConstraints = false
         tableView.addSubview( chuseScheduleLabel)
         
-        
         NSLayoutConstraint.activate([
-            chuseScheduleLabel.leadingAnchor.constraint(equalTo: tableView.leadingAnchor, constant: 20),
+            chuseScheduleLabel.leadingAnchor.constraint(equalTo: tableView.leadingAnchor, constant: 16),
             chuseScheduleLabel.topAnchor.constraint(equalTo: scheduleLabel.bottomAnchor, constant: 2)
         ])
         
@@ -369,15 +392,22 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return tableData.count
+        return 2
     }
+    
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         cell.textLabel?.text = tableData[indexPath.section][indexPath.row]
         cell.accessoryType = .disclosureIndicator
-        cell.textLabel?.textColor = .black
+        cell.textLabel?.textColor = .clear
         cell.backgroundColor = .gr
+        
+        if indexPath.section == tableData.count - 1 && indexPath.row == tableData[indexPath.section].count - 1 {
+            cell.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: tableView.bounds.width)
+        } else {
+            cell.separatorInset = UIEdgeInsets(top: 0, left: 15, bottom: 0, right: 15)
+        }
         
         return cell
     }
@@ -391,7 +421,7 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
             present(categoriesController, animated: true)
         } else if selectedOption == "Расписание" {
             let scheduleVC = ScheduleController()
-            scheduleVC.delegate = self  // Назначаем делегата
+            scheduleVC.delegate = self
             present(scheduleVC, animated: true)
             let scheduleController = ScheduleController()
             present(scheduleController, animated: true)
@@ -512,7 +542,7 @@ extension NewHabitController {
                 selectedColor = nil
             } else {
                 selectedColorIndex = indexPath
-                selectedColor = colors[indexPath.item] // Сохраняем цвет в переменную
+                selectedColor = colors[indexPath.item]
             }
         } else if collectionView == emojiCollectionView {
             if selectedEmojiIndex == indexPath {
@@ -520,15 +550,13 @@ extension NewHabitController {
                 selectedEmoji = nil
             } else {
                 selectedEmojiIndex = indexPath
-                selectedEmoji = emogies[indexPath.item] // Сохраняем эмодзи в переменную
+                selectedEmoji = emogies[indexPath.item]
             }
         }
         
         collectionView.reloadData()
         updateCreateButtonState()
     }
-    
-    
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         if collectionView == colorCollectionView {
@@ -557,7 +585,6 @@ extension NewHabitController {
     @objc func didTapCancelButton() {
         dismiss(animated: true)
     }
-    
     
     @objc func didTapCreateButton() {
         print("Кнопка 'Создать' нажата")
@@ -627,6 +654,5 @@ extension NewHabitController {
         print("Не удалось найти нужный ViewController")
         dismiss(animated: true)
     }
-    
 }
 

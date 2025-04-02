@@ -23,6 +23,9 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
     var selectedColors: String?
     let createButton = UIButton(type: .system)
     
+    private var categoriesTopConstraint: NSLayoutConstraint?
+    private var categoriesTopConstraintSmall: NSLayoutConstraint?
+    
     private let emogies = [ "🙂", "😻", "🌺", "🐶", "❤️", "😱", "😇", "😡", "🥶", "🤔", "🙌", "🍔", "🥦", "🏓", "🥇", "🎸", "🏝", "😪"]
     
     private let colors: [UIColor] = [
@@ -49,6 +52,9 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
                 
                 chuseCategoriesNames.text = categoriesServise.selectedCategory
                 self.updateCreateButtonState()
+                
+                categoriesTopConstraint?.isActive = false
+                categoriesTopConstraintSmall?.isActive = true
             }
         
         setupClearButton()
@@ -71,9 +77,7 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         NewIrregularEventLabel.textAlignment = .center
         NewIrregularEventLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        
         contentView.addSubview(NewIrregularEventLabel)
-        
         
         NSLayoutConstraint.activate([
             NewIrregularEventLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
@@ -104,6 +108,7 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
             name.topAnchor.constraint(equalTo: NewIrregularEventLabel.bottomAnchor, constant: 38)
         ])
         
+        tableView.separatorStyle = .none
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
@@ -120,8 +125,12 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
             tableView.topAnchor.constraint(equalTo: name.bottomAnchor, constant: 20)
         ])
         
+        categoriesTopConstraint = categories.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 27)
+        categoriesTopConstraintSmall = categories.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 15)
+        
         categories.text = "Категория"
-        categories.textColor = .clear
+        categories.textColor = .forText
+        categories.font = UIFont.systemFont(ofSize: 17, weight: .regular)
         categories.translatesAutoresizingMaskIntoConstraints = false
         tableView.addSubview(categories)
         
@@ -131,12 +140,13 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         ])
         
         chuseCategoriesNames.text = chuseCategoriesName
-        chuseCategoriesNames.textColor = .gray
+        chuseCategoriesNames.textColor = .greyButton
+        chuseCategoriesNames.font = UIFont.systemFont(ofSize: 17, weight: .regular)
         chuseCategoriesNames.translatesAutoresizingMaskIntoConstraints = false
         tableView.addSubview(chuseCategoriesNames)
         
         NSLayoutConstraint.activate([
-            chuseCategoriesNames.leadingAnchor.constraint(equalTo: tableView.leadingAnchor, constant: 20),
+            chuseCategoriesNames.leadingAnchor.constraint(equalTo: tableView.leadingAnchor, constant: 16),
             chuseCategoriesNames.topAnchor.constraint(equalTo: categories.bottomAnchor, constant: 2),
         ])
         
@@ -232,7 +242,6 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         
         cancellButton.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         
-        
         NSLayoutConstraint.activate([
             cancellButton.widthAnchor.constraint(equalToConstant: 166),
             cancellButton.heightAnchor.constraint(equalToConstant:60),
@@ -244,14 +253,12 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         scrollView.contentSize = CGSize(width: view.frame.width, height: 1000)
         scrollView.showsVerticalScrollIndicator = true
         
-        
         createButton.setTitle("Создать", for: .normal)
         createButton.setTitleColor(.white, for: .normal)
         createButton.backgroundColor = .greyButton
         
         createButton.layer.cornerRadius = 16
         createButton.translatesAutoresizingMaskIntoConstraints = false
-        
         
         contentView.addSubview(createButton)
         createButton.addTarget(self, action: #selector(didTapCreateButton), for: .touchUpInside)
@@ -276,7 +283,6 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
             contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
         ])
-        
     }
     
     func setCategoryName(_ name: String) {
@@ -297,6 +303,7 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         name.rightViewMode = .whileEditing
         clearButton.isHidden = true
     }
+    
     @objc private func textFieldDidChange() {
         clearButton.isHidden = name.text?.isEmpty ?? true
         updateCreateButtonState()
@@ -339,9 +346,12 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         cell.textLabel?.text = tableData[indexPath.row]
         cell.accessoryType = .disclosureIndicator
+        cell.textLabel?.textColor = .clear
         cell.backgroundColor = .gr
+        
         return cell
     }
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let selectedOption = tableData[indexPath.row]
@@ -466,7 +476,7 @@ extension NewIrregularEventController {
                 selectedColor = nil
             } else {
                 selectedColorIndex = indexPath
-                selectedColor = colors[indexPath.item] // Сохраняем цвет в переменную
+                selectedColor = colors[indexPath.item]
             }
         } else if collectionView == emojiCollectionView {
             if selectedEmojiIndex == indexPath {
@@ -474,7 +484,7 @@ extension NewIrregularEventController {
                 selectedEmoji = nil
             } else {
                 selectedEmojiIndex = indexPath
-                selectedEmoji = emogies[indexPath.item] // Сохраняем эмодзи в переменную
+                selectedEmoji = emogies[indexPath.item]
             }
         }
         
@@ -506,7 +516,6 @@ extension NewIrregularEventController {
     @objc func didTapCancelButton() {
         dismiss(animated: true)
     }
-    
     
     @objc func didTapCreateButton() {
         print("Кнопка 'Создать' нажата")

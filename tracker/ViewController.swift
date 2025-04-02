@@ -36,6 +36,7 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
             completedTrackers = savedTrackers
         }
     }
+    
     func doneTrackersCount(id: UUID) -> Int {
         return completedTrackers[id]?.count ?? 0
     }
@@ -529,42 +530,42 @@ final class TrackerCell: UICollectionViewCell {
     
     @objc private func toggleCompletion() {
         updateButtonState()
+        
         let currentDate = Date()
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd.MM.yyyy"
-        let formattedCurrentDate = dateFormatter.string(from: currentDate)
+        let trackerDate = controller.currentData.date
         
-        let formattedTrackerDate = dateFormatter.string(from: controller.currentData.date)
+        let calendar = Calendar.current
         
-        if formattedCurrentDate < formattedTrackerDate {
+        let currentDateOnly = calendar.startOfDay(for: currentDate)
+        let trackerDateOnly = calendar.startOfDay(for: trackerDate)
+        
+        if trackerDateOnly > currentDateOnly {
+            doneButton.isUserInteractionEnabled = false
             return
         }
         
-        if formattedTrackerDate <= formattedCurrentDate {
-            
-            isCompleted.toggle()
-            let config = UIImage.SymbolConfiguration(pointSize: 35, weight: .black)
-            
-            let newImage = isCompleted
-            ? UIImage(systemName: "checkmark.circle.fill", withConfiguration: config)?.withRenderingMode(.alwaysTemplate)
-            : UIImage(named: "Property1")?.withRenderingMode(.alwaysTemplate)
-            
-            controller.addcompletedTracker(id: id!, isCompleted: isCompleted)
-            updateButtonState()
-            
-            doneButton.setImage(nil, for: .normal)
-            doneButton.setImage(newImage, for: .normal)
-            
-            doneButton.tintColor = .colorSelection5
-            doneButton.alpha = isCompleted ? 0.3 : 1.0
-            doneButton.layoutIfNeeded()
-            
-            controller.addcompletedTracker(id: id!, isCompleted: isCompleted)
-            print("Кнопка нажата")
-        } else {
-            doneButton.isHidden = false
-        }
+        doneButton.isUserInteractionEnabled = true
+        
+        isCompleted.toggle()
+        
+        let config = UIImage.SymbolConfiguration(pointSize: 35, weight: .black)
+        let newImage = isCompleted
+        ? UIImage(systemName: "checkmark.circle.fill", withConfiguration: config)?.withRenderingMode(.alwaysTemplate)
+        : UIImage(named: "Property1")?.withRenderingMode(.alwaysTemplate)
+        
+        controller.addcompletedTracker(id: id!, isCompleted: isCompleted)
+        updateButtonState()
+        
+        doneButton.setImage(nil, for: .normal)
+        doneButton.setImage(newImage, for: .normal)
+        
+        doneButton.tintColor = .colorSelection5
+        doneButton.alpha = isCompleted ? 0.3 : 1.0
+        doneButton.layoutIfNeeded()
+        
+        print("Кнопка нажата")
     }
+    
     
     func dayTipes(day: Int) -> String {
         let preLastDigit = (day / 10) % 10
