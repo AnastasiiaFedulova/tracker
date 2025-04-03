@@ -105,7 +105,8 @@ final class CreateCategoriesController: UIViewController, UITextFieldDelegate {
         
         categoriesServise.addCategories(categoryName)
         
-        dismiss(animated: true)
+        NotificationCenter.default.post(name: CategoriesServise.didChangeCategories, object: nil)
         
+        dismiss(animated: true)
     }
 }

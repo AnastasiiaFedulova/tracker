@@ -1,6 +1,5 @@
 import UIKit
 
-
 final class CategoriesController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
     let categoriesServise = CategoriesServise.shared
@@ -11,6 +10,7 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
     private let labelStar = UILabel()
     private let tableViewContainer = UIView()
     private let tableData = [""]
+    private var tableViewContainerHeightConstraint: NSLayoutConstraint?
     
     private var currentSelectedCell: UITableViewCell?
     
@@ -20,18 +20,16 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
         
         setupUI()
         showCategories()
-  
-        NotificationCenter.default
-            .addObserver(
-                forName: CategoriesServise.didChangeNotification,
-                object: nil,
-                queue: .main
-            ) { [weak self] _ in
-                guard let self = self else { return }
-                
-                showCategories()
-             
-            }
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(updateCategories),
+            name: CategoriesServise.didChangeCategories,
+            object: nil
+        )
+    }
+    @objc private func updateCategories() {
+        showCategories()
     }
     
     private func setupUI() {
@@ -52,9 +50,10 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
         tableViewContainer.layer.masksToBounds = true
         tableViewContainer.backgroundColor = .gr
         view.addSubview(tableViewContainer)
+        tableViewContainerHeightConstraint = tableViewContainer.heightAnchor.constraint(equalToConstant: 100)
+        tableViewContainerHeightConstraint?.isActive = true
         
         NSLayoutConstraint.activate([
-            tableViewContainer.heightAnchor.constraint(equalToConstant: CGFloat(categoriesServise.categories.count * 75)),
             tableViewContainer.topAnchor.constraint(equalTo: categoriesLabel.bottomAnchor, constant: 20),
             tableViewContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             tableViewContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
@@ -130,10 +129,15 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
             tableView.isHidden = false
             starImage.isHidden = true
             labelStar.isHidden = true
+            
             tableView.reloadData()
             
             let newHeight = CGFloat(categories.count) * 75
-            tableViewContainer.frame.size.height = newHeight + 40
+            tableViewContainerHeightConstraint?.constant = newHeight + 40
+            
+            UIView.animate(withDuration: 0.3) {
+                self.view.layoutIfNeeded()
+            }
         }
     }
     
@@ -181,27 +185,21 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
         return 75
     }
     
-    
     @objc func didTapaddCategoryButton() {
-        
         if let selectedCell = currentSelectedCell, selectedCell.accessoryType == .checkmark {
-            
-            nameOfChuseCategory = self.categoriesServise.categories[selectedCell.tag]
-            
+            nameOfChuseCategory = categoriesServise.categories[selectedCell.tag]
             categoriesServise.updateSelectedCategory(nameOfChuseCategory ?? "")
             
             NotificationCenter.default.post(name: CategoriesServise.didChangeCategories, object: nil)
+            
             dismiss(animated: true)
-            
         } else {
-            
             let createCategoriesController = CreateCategoriesController()
             createCategoriesController.modalPresentationStyle = .automatic
-            present(createCategoriesController, animated: true, completion: nil)
+            present(createCategoriesController, animated: true)
         }
     }
 }
-
 
 extension CategoriesController: UIContextMenuInteractionDelegate {
     

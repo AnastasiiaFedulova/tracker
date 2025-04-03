@@ -1,4 +1,3 @@
-//
 //  ViewController.swift
 //  tracker
 //
@@ -37,6 +36,7 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
             completedTrackers = savedTrackers
         }
     }
+    
     func doneTrackersCount(id: UUID) -> Int {
         return completedTrackers[id]?.count ?? 0
     }
@@ -68,6 +68,9 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
     let labelStar = UILabel()
     private var visibleCategories: [TrackerCategory] = []
     
+    var trackers: [TrackerCoreData] = []
+    
+    private var trackerStore: TrackerStore!
     
     var categories: [TrackerCategory] = []
     {
@@ -77,37 +80,43 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
     }
     
     init() {
-                let layout = UICollectionViewFlowLayout()
-                layout.sectionInset = UIEdgeInsets(top: 12, left: 16, bottom: 0, right: 16)
+        let layout = UICollectionViewFlowLayout()
+        layout.sectionInset = UIEdgeInsets(top: 12, left: 16, bottom: 0, right: 16)
         
-                let padding: CGFloat = 16
-                let spacing: CGFloat = 9
-                let totalSpacing = padding * 2 + spacing
-                let itemWidth = (UIScreen.main.bounds.width - totalSpacing) / 2
-                layout.itemSize = CGSize(width: itemWidth, height: 148)
-                layout.itemSize = CGSize(width: (UIScreen.main.bounds.width - 16 * 2 - 9) / 2, height: 148)
+        let padding: CGFloat = 16
+        let spacing: CGFloat = 9
+        let totalSpacing = padding * 2 + spacing
+        let itemWidth = (UIScreen.main.bounds.width - totalSpacing) / 2
+        layout.itemSize = CGSize(width: itemWidth, height: 148)
+        layout.itemSize = CGSize(width: (UIScreen.main.bounds.width - 16 * 2 - 9) / 2, height: 148)
         
-                collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-                super.init(nibName: nil, bundle: nil)
-                collectionView.collectionViewLayout = layout
-            }
-
+        collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        super.init(nibName: nil, bundle: nil)
+        collectionView.collectionViewLayout = layout
+    }
+    
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    
     override func viewDidLoad() {
-//        
-//                let newTracker1 = Tracker(id:UUID(), name: "Поливать цветы", color: .colorSelection5, emoji: "❤️", calendar: [.Thursday], date: nil)
-//        
-//                let newTracker2 = Tracker(id:UUID(), name: "eat цветы", color: .colorSelection5, emoji: "❤️", calendar: [.Thursday], date: nil)
-//        
-//                        addTracker(forCategory: "Домашний уют", tracker: newTracker1)
-//                        addTracker(forCategory: "Домашний уют", tracker: newTracker2)
+        trackerStore = TrackerStore(context: PersistenceController.shared.context)
         
+        trackerStore.onUpdate = { [weak self] in
+            DispatchQueue.main.async {
+                self?.updateCategoriesFromCoreData()
+                self?.reloadCategories()
+            }
+        }
+        
+        let context = PersistenceController.shared.context
         super.viewDidLoad()
+        loadTrackers()
+        
+        self.trackers = trackerStore.getTrackers()
+        
+        collectionView.reloadData()
         
         view.backgroundColor = .white
         loadCompletedTrackers()
@@ -213,29 +222,44 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
         reloadCategories()
     }
     
+    @objc private func reloadData() {
+        self.trackers = trackerStore.getTrackers()
+        collectionView.reloadData()
+    }
+    
     private func reloadCategories() {
         let calendar = Calendar.current
         let filterWeekday = calendar.component(.weekday, from: currentData.date) - 1
+        let currentDate = currentData.date
+        print("Текущая дата для фильтрации: \(currentDate)")
         
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd.MM.yyyy"
-        let currentDate = dateFormatter.string(from: currentData.date)
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let currentDate2 = dateFormatter.string(from: currentData.date)
         visibleCategories = categories.map { category in
             TrackerCategory(
                 title: category.title,
-                trakers: category.trakers.filter { trakers in
-                    trakers.calendar.contains { (weekDay: Weekday) in
+                trakers: category.trakers.filter { tracker in
+                    
+                    if let trackerDateString = tracker.date {
+                        
+                        return trackerDateString == currentDate2
+                    }
+                    
+                    if tracker.calendar.isEmpty {
+                        return false
+                    }
+                    
+                    let isDayOfWeek = tracker.calendar.contains { weekDay in
                         Weekday.allCases.firstIndex(of: weekDay) == filterWeekday
-                    } || trakers.date == currentDate
+                    }
+                    return isDayOfWeek
                 }
             )
         }
         
-        visibleCategories = visibleCategories.filter { category in
-            category.trakers.count > 0
-        }
+        visibleCategories = visibleCategories.filter { !$0.trakers.isEmpty }
         collectionView.reloadData()
-        
         updateEmptyState()
     }
     
@@ -295,42 +319,108 @@ extension ViewController {
         header.configure(with: visibleCategories[indexPath.section].title)
         return header
     }
-}
-
-extension ViewController {
-
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        
-                let availableWidth = collectionView.bounds.width
-       
-                let padding: CGFloat = 16
-                let spasing: CGFloat = availableWidth - (167 * 2) - (padding * 2)
-
-                let numberOfItemsInRow: CGFloat = 2
-
-                let itemWidth = (availableWidth - (padding * 2) - spasing) / numberOfItemsInRow
-
-                return CGSize(width: itemWidth, height: 148)
-   }
-    func addTracker(forCategory categoryTitle: String, tracker: Tracker) {
-        print("work")
-        var updatedCategories = categories
-        
-        if let categoryIndex = updatedCategories.firstIndex(where: { $0.title == categoryTitle }) {
-            let updatedTrackers = updatedCategories[categoryIndex].trakers + [tracker]
-            
-            let updatedCategory = TrackerCategory(title: updatedCategories[categoryIndex].title, trakers: updatedTrackers)
-            
-            updatedCategories[categoryIndex] = updatedCategory
-        } else {
-            let newCategory = TrackerCategory(title: categoryTitle, trakers: [tracker])
-            updatedCategories.append(newCategory)
-        }
-        
-        categories = updatedCategories
+    
+    func loadTrackers() {
+        self.trackers = trackerStore.getTrackers()
+        updateCategoriesFromCoreData()
+        collectionView.reloadData()
     }
 }
 
+extension ViewController {
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        
+        let availableWidth = collectionView.bounds.width
+        
+        let padding: CGFloat = 16
+        let spasing: CGFloat = availableWidth - (167 * 2) - (padding * 2)
+        
+        let numberOfItemsInRow: CGFloat = 2
+        
+        let itemWidth = (availableWidth - (padding * 2) - spasing) / numberOfItemsInRow
+        
+        return CGSize(width: itemWidth, height: 148)
+    }
+    
+    func addTracker(forCategory categoryTitle: String, trackerCoreData: TrackerCoreData) {
+        print("Добавляем трекер в категорию через Core Data")
+        
+        let context = PersistenceController.shared.context
+        let categoryStore = TrackerCategoryStore(context: context)
+        
+        let category: TrackerCategoryCoreData
+        if let existingCategory = categoryStore.fetchCategory(byTitle: categoryTitle) {
+            category = existingCategory
+        } else {
+            category = TrackerCategoryCoreData(context: context)
+            category.title = categoryTitle
+            category.trackers = NSSet()
+        }
+        
+        category.addToTrackers(trackerCoreData)
+        
+        do {
+            try context.save()
+            print("Категория и трекер обновлены в Core Data")
+            updateCategoriesFromCoreData()
+            collectionView.reloadData()
+        } catch {
+            print("Ошибка сохранения в Core Data: \(error)")
+        }
+        
+        updateCategoriesFromCoreData()
+    }
+    
+    
+    func updateCategoriesFromCoreData() {
+        
+        do {
+            let fetchedCategories = TrackerCategoryStore.shared.fetchCategories()
+            
+            categories = fetchedCategories.map { category in
+                
+                let trackers: [Tracker] = (category.trackers as? Set<TrackerCoreData>)?.compactMap { coreDataTracker in
+                    guard let id = coreDataTracker.id else {
+                        
+                        print("Трекер без id пропускаем")
+                        fatalError("Произошла критическая ошибка!")
+                    }
+                    
+                    let name = coreDataTracker.name ?? "Без названия"
+                    let emoji = coreDataTracker.emoji ?? "❓"
+                    let color = coreDataTracker.color ?? ""
+                    let calendarData = coreDataTracker.calendar as? Data
+                    let calendar = decodeCalendar(from: calendarData)
+                    
+                    return Tracker(
+                        id: id,
+                        name: name,
+                        color: UIColor.fromHex(hex: color),
+                        emoji: emoji,
+                        calendar: calendar,
+                        date: coreDataTracker.date
+                    )
+                } ?? []
+                
+                let title = category.title ?? "Без категории"
+                return TrackerCategory(title: title, trakers: trackers)
+            }
+        } catch {
+            print("Ошибка загрузки категорий из Core Data: \(error)")
+        }
+    }
+    
+    func decodeCalendar(from data: Data?) -> [Weekday] {
+        guard let data = data else { return [] }
+        do {
+            return try JSONDecoder().decode([Weekday].self, from: data)
+        } catch {
+            print("Ошибка декодирования календаря: \(error)")
+            return []
+        }
+    }
+}
 
 final class TrackerCell: UICollectionViewCell {
     private let emojiLabel = UILabel()
@@ -385,7 +475,7 @@ final class TrackerCell: UICollectionViewCell {
         
         let image = UIImage(named: "Property1")?.withRenderingMode(.alwaysTemplate)
         doneButton.setImage(image, for: .normal)
-        doneButton.tintColor = .colorSelection5
+        doneButton.tintColor = .clear
         doneButton.translatesAutoresizingMaskIntoConstraints = false
         doneButton.addTarget(self, action: #selector(toggleCompletion), for: .touchUpInside)
         
@@ -397,7 +487,7 @@ final class TrackerCell: UICollectionViewCell {
         background.addSubview(emojiLabel)
         background.addSubview(titleLabel)
         
-     
+        
         contentView.addSubview(dayLabel)
         contentView.addSubview(doneButton)
         
@@ -432,7 +522,7 @@ final class TrackerCell: UICollectionViewCell {
             doneButton.trailingAnchor.constraint(equalTo: background.trailingAnchor, constant: -12)
         ])
     }
-
+    
     override func layoutSubviews() {
         super.layoutSubviews()
         print("Subviews:", contentView.subviews)
@@ -440,42 +530,39 @@ final class TrackerCell: UICollectionViewCell {
     
     @objc private func toggleCompletion() {
         updateButtonState()
+        
         let currentDate = Date()
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd.MM.yyyy"
-        let formattedCurrentDate = dateFormatter.string(from: currentDate)
+        let trackerDate = controller.currentData.date
         
-        let formattedTrackerDate = dateFormatter.string(from: controller.currentData.date)
+        let calendar = Calendar.current
         
-        if formattedCurrentDate < formattedTrackerDate {
+        let currentDateOnly = calendar.startOfDay(for: currentDate)
+        let trackerDateOnly = calendar.startOfDay(for: trackerDate)
+        
+        if trackerDateOnly > currentDateOnly {
             return
         }
         
-        if formattedTrackerDate <= formattedCurrentDate {
-            
-            isCompleted.toggle()
-            let config = UIImage.SymbolConfiguration(pointSize: 35, weight: .black)
-            
-            let newImage = isCompleted
-            ? UIImage(systemName: "checkmark.circle.fill", withConfiguration: config)?.withRenderingMode(.alwaysTemplate)
-            : UIImage(named: "Property1")?.withRenderingMode(.alwaysTemplate)
-            
-            controller.addcompletedTracker(id: id!, isCompleted: isCompleted)
-            updateButtonState()
-            
-            doneButton.setImage(nil, for: .normal)
-            doneButton.setImage(newImage, for: .normal)
-            
-            doneButton.tintColor = .colorSelection5
-            doneButton.alpha = isCompleted ? 0.3 : 1.0
-            doneButton.layoutIfNeeded()
-            
-            controller.addcompletedTracker(id: id!, isCompleted: isCompleted)
-            print("Кнопка нажата")
-        } else {
-            doneButton.isHidden = false
-        }
+        isCompleted.toggle()
+        
+        let config = UIImage.SymbolConfiguration(pointSize: 35, weight: .black)
+        let newImage = isCompleted
+        ? UIImage(systemName: "checkmark.circle.fill", withConfiguration: config)?.withRenderingMode(.alwaysTemplate)
+        : UIImage(named: "Property1")?.withRenderingMode(.alwaysTemplate)
+        
+        controller.addcompletedTracker(id: id!, isCompleted: isCompleted)
+        updateButtonState()
+        
+        doneButton.setImage(nil, for: .normal)
+        doneButton.setImage(newImage, for: .normal)
+        
+        doneButton.tintColor = .colorSelection5
+        doneButton.alpha = isCompleted ? 0.3 : 1.0
+        doneButton.layoutIfNeeded()
+        
+        print("Кнопка нажата")
     }
+    
     
     func dayTipes(day: Int) -> String {
         let preLastDigit = (day / 10) % 10
@@ -502,6 +589,7 @@ final class TrackerCell: UICollectionViewCell {
         titleLabel.text = tracker.name
         emojiLabel.text = tracker.emoji
         background.backgroundColor = tracker.color
+        doneButton.tintColor = tracker.color
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd.MM.yyyy"
@@ -559,6 +647,3 @@ final class CategoryHeaderView: UICollectionReusableView {
         titleLabel.text = title
     }
 }
-
-
-

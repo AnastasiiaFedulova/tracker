@@ -26,7 +26,7 @@ struct TrackerRecord{
     let date: String
 }
 
-enum Weekday: String, CaseIterable {
+enum Weekday: String, Codable, CaseIterable {
     case Sunday = "Воскресенье"
     case Monday = "Понедельник"
     case Tuesday = "Вторник"
@@ -34,5 +34,19 @@ enum Weekday: String, CaseIterable {
     case Thursday = "Четверг"
     case Friday = "Пятница"
     case Saturday = "Суббота"
+    
+    var shortName: String {
+        switch self {
+        case .Monday: return "Пн"
+        case .Tuesday: return "Вт"
+        case .Wednesday: return "Ср"
+        case .Thursday: return "Чт"
+        case .Friday: return "Пт"
+        case .Saturday: return "Сб"
+        case .Sunday: return "Вс"
+        }
+    }
 }
+
+
 

@@ -14,10 +14,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         
-        // Создаем TabBarController
         let tabBarController = UITabBarController()
         
-        // Создаем и настраиваем первый таб (Трекеры)
         let trackersController = ViewController()
         trackersController.tabBarItem = UITabBarItem(
             title: "Трекеры",
@@ -25,19 +23,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             selectedImage: UIImage(named: "ic 28x28 1")
         )
         
-        // Создаем и настраиваем второй таб (Статистика)
-        let statisticsController = UIViewController() // Замени на реальный контроллер статистики
+        let statisticsController = UIViewController()
         statisticsController.view.backgroundColor = .white
         statisticsController.tabBarItem = UITabBarItem(
             title: "Статистика",
             image: UIImage(named: "ic 28x28 2"),
             selectedImage: UIImage(named: "ic 28x28 3")
         )
-        
-        // Добавляем контроллеры в TabBarController
+
         tabBarController.viewControllers = [trackersController, statisticsController]
-        
-        // Устанавливаем TabBarController как корневой
+
         window = UIWindow(windowScene: windowScene)
         window?.rootViewController = tabBarController
         window?.makeKeyAndVisible()
