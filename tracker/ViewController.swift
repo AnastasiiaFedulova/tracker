@@ -540,11 +540,8 @@ final class TrackerCell: UICollectionViewCell {
         let trackerDateOnly = calendar.startOfDay(for: trackerDate)
         
         if trackerDateOnly > currentDateOnly {
-            doneButton.isUserInteractionEnabled = false
             return
         }
-        
-        doneButton.isUserInteractionEnabled = true
         
         isCompleted.toggle()
         
