@@ -104,6 +104,6 @@ final class TrackerStore: NSObject, NSFetchedResultsControllerDelegate {
     }
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        onUpdate?() 
+        onUpdate?()
     }
 }

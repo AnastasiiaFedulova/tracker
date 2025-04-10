@@ -361,6 +361,7 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
             present(categoriesController, animated: true)
         }
     }
+    
 }
 
 extension NewIrregularEventController {
