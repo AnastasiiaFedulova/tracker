@@ -1,4 +1,3 @@
-
 import CoreData
 
 final class TrackerCategoryStore: NSObject, NSFetchedResultsControllerDelegate {
@@ -40,6 +39,10 @@ final class TrackerCategoryStore: NSObject, NSFetchedResultsControllerDelegate {
         return fetchedResultsController.fetchedObjects ?? []
     }
     
+    func fetchCategoryNames() -> [String] {
+        return fetchedResultsController.fetchedObjects?.compactMap { $0.title } ?? []
+    }
+    
     func fetchCategory(byTitle title: String) -> TrackerCategoryCoreData? {
         return fetchedResultsController.fetchedObjects?.first(where: { $0.title == title })
     }
@@ -49,6 +52,12 @@ final class TrackerCategoryStore: NSObject, NSFetchedResultsControllerDelegate {
         category.title = title
         saveContext()
         return category
+    }
+    
+    func deleteCategory(named name: String) {
+        guard let category = fetchCategory(byTitle: name) else { return }
+        context.delete(category)
+        saveContext()
     }
     
     private func saveContext() {

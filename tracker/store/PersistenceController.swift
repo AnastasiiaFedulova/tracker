@@ -4,15 +4,14 @@
 //
 //  Created by Anastasiia on 26.03.2025.
 //
-
 import Foundation
 import CoreData
 
 final class PersistenceController {
     static let shared = PersistenceController()
-
+    
     let container: NSPersistentContainer
-
+    
     var context: NSManagedObjectContext {
         return container.viewContext
     }

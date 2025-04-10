@@ -13,6 +13,8 @@ final class EditCategoriesController: UIViewController, UITextFieldDelegate {
     private let clearButton = UIButton(type: .custom)
     let name = UITextField()
     let categoriesServise = CategoriesServise.shared
+    var onCategoryUpdated: (() -> Void)?
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -78,6 +80,7 @@ final class EditCategoriesController: UIViewController, UITextFieldDelegate {
         if let oldName = categoriesName {
             categoriesServise.updateName(oldName: oldName, newName: newName)
             categoriesServise.saveCategories()
+            onCategoryUpdated?()
         }
         dismiss(animated: true)
     }

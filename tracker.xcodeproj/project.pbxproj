@@ -13,6 +13,10 @@
 		5504F6942D91A20400C2032D /* TrackerRecordStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5504F6932D91A20400C2032D /* TrackerRecordStore.swift */; };
 		5504F69D2D94905F00C2032D /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5504F69C2D94905F00C2032D /* PersistenceController.swift */; };
 		5504F69F2D94912800C2032D /* color.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5504F69E2D94912800C2032D /* color.swift */; };
+		5504F73C2DA406D300C2032D /* OnboardingPageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5504F73B2DA406D300C2032D /* OnboardingPageViewController.swift */; };
+		5504F73E2DA4492100C2032D /* OnboardingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5504F73D2DA4492100C2032D /* OnboardingViewController.swift */; };
+		5504F7402DA6872500C2032D /* CategoriesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5504F73F2DA6872500C2032D /* CategoriesViewModel.swift */; };
+		5504F7442DA71DE200C2032D /* CategoryCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5504F7432DA71DE200C2032D /* CategoryCell.swift */; };
 		5562A06C2D6F8359000AB266 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5562A06B2D6F8359000AB266 /* AppDelegate.swift */; };
 		5562A06E2D6F8359000AB266 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5562A06D2D6F8359000AB266 /* SceneDelegate.swift */; };
 		5562A0702D6F8359000AB266 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5562A06F2D6F8359000AB266 /* ViewController.swift */; };
@@ -37,6 +41,10 @@
 		5504F6932D91A20400C2032D /* TrackerRecordStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerRecordStore.swift; sourceTree = "<group>"; };
 		5504F69C2D94905F00C2032D /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
 		5504F69E2D94912800C2032D /* color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = color.swift; sourceTree = "<group>"; };
+		5504F73B2DA406D300C2032D /* OnboardingPageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingPageViewController.swift; sourceTree = "<group>"; };
+		5504F73D2DA4492100C2032D /* OnboardingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewController.swift; sourceTree = "<group>"; };
+		5504F73F2DA6872500C2032D /* CategoriesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoriesViewModel.swift; sourceTree = "<group>"; };
+		5504F7432DA71DE200C2032D /* CategoryCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryCell.swift; sourceTree = "<group>"; };
 		5562A0682D6F8359000AB266 /* tracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = tracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5562A06B2D6F8359000AB266 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		5562A06D2D6F8359000AB266 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -105,9 +113,13 @@
 				5562A06F2D6F8359000AB266 /* ViewController.swift */,
 				5562A0832D6F89B1000AB266 /* TrackerTypesController.swift */,
 				5562A0852D6F9EB8000AB266 /* NewHabitController.swift */,
+				5504F7432DA71DE200C2032D /* CategoryCell.swift */,
 				5562A0872D6FA372000AB266 /* NewIrregularEventController.swift */,
+				5504F73D2DA4492100C2032D /* OnboardingViewController.swift */,
+				5504F73B2DA406D300C2032D /* OnboardingPageViewController.swift */,
 				5562A08F2D7225D1000AB266 /* CategoriesServise.swift */,
 				5562A08B2D71F3F1000AB266 /* ScheduleController.swift */,
+				5504F73F2DA6872500C2032D /* CategoriesViewModel.swift */,
 				5562A08D2D7214B4000AB266 /* CreateCategoriesController.swift */,
 				5562A0892D71F138000AB266 /* CategoriesController.swift */,
 				5562A0912D74B875000AB266 /* EditCategoriesController.swift */,
@@ -190,14 +202,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5504F7442DA71DE200C2032D /* CategoryCell.swift in Sources */,
 				5504F69F2D94912800C2032D /* color.swift in Sources */,
 				5562A08E2D7214B4000AB266 /* CreateCategoriesController.swift in Sources */,
 				5562A0702D6F8359000AB266 /* ViewController.swift in Sources */,
 				5562A0862D6F9EB8000AB266 /* NewHabitController.swift in Sources */,
+				5504F73E2DA4492100C2032D /* OnboardingViewController.swift in Sources */,
 				5504F68E2D8F2C4500C2032D /* Model.xcdatamodeld in Sources */,
 				5562A08C2D71F3F1000AB266 /* ScheduleController.swift in Sources */,
 				5504F6942D91A20400C2032D /* TrackerRecordStore.swift in Sources */,
+				5504F73C2DA406D300C2032D /* OnboardingPageViewController.swift in Sources */,
 				5562A0902D7225D1000AB266 /* CategoriesServise.swift in Sources */,
+				5504F7402DA6872500C2032D /* CategoriesViewModel.swift in Sources */,
 				5562A0922D74B875000AB266 /* EditCategoriesController.swift in Sources */,
 				5562A0882D6FA372000AB266 /* NewIrregularEventController.swift in Sources */,
 				5562A0842D6F89B1000AB266 /* TrackerTypesController.swift in Sources */,

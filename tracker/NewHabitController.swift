@@ -31,7 +31,6 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
         scheduleLabelTopConstraintSmall?.isActive = true
     }
     
-    
     @objc private func openSchedule() {
         let scheduleVC = ScheduleController()
         scheduleVC.delegate = self
@@ -40,7 +39,6 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
     
     let chuseScheduleLabel = UILabel()
     let scheduleLabel = UILabel()
-    let categoriesController = CategoriesController()
     let categories = UILabel()
     let chuseCategoriesNames = UILabel()
     let name = UITextField()
@@ -172,7 +170,6 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
         NSLayoutConstraint.activate([
             tableView.widthAnchor.constraint(equalToConstant: 343),
             tableView.heightAnchor.constraint(equalToConstant: CGFloat(tableData.flatMap { $0 }.count) * 75),
-            //       tableView.heightAnchor.constraint(equalToConstant: 75 * 2),
             tableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             tableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             tableView.topAnchor.constraint(equalTo: name.bottomAnchor, constant: 20)

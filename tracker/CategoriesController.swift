@@ -2,24 +2,22 @@ import UIKit
 
 final class CategoriesController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
-    let categoriesServise = CategoriesServise.shared
+    private let viewModel = CategoriesViewModel()
     
     var nameOfChuseCategory: String?
     private let tableView = UITableView()
     private let starImage = UIImageView(image: UIImage(named: "star"))
     private let labelStar = UILabel()
     private let tableViewContainer = UIView()
-    private let tableData = [""]
     private var tableViewContainerHeightConstraint: NSLayoutConstraint?
-    
-    private var currentSelectedCell: UITableViewCell?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
         
         setupUI()
-        showCategories()
+        bindViewModel()
+        viewModel.loadCategories()
         
         NotificationCenter.default.addObserver(
             self,
@@ -28,8 +26,15 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
             object: nil
         )
     }
+    
     @objc private func updateCategories() {
-        showCategories()
+        viewModel.loadCategories()
+    }
+    
+    private func bindViewModel() {
+        viewModel.categoriesDidChange = { [weak self] in
+            self?.showCategories()
+        }
     }
     
     private func setupUI() {
@@ -46,11 +51,11 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
         ])
         
         tableViewContainer.translatesAutoresizingMaskIntoConstraints = false
-        tableViewContainer.layer.cornerRadius = 16
+        tableViewContainer.layer.cornerRadius = 0
         tableViewContainer.layer.masksToBounds = true
-        tableViewContainer.backgroundColor = .gr
+        tableViewContainer.backgroundColor = .clear
         view.addSubview(tableViewContainer)
-        tableViewContainerHeightConstraint = tableViewContainer.heightAnchor.constraint(equalToConstant: 100)
+        tableViewContainerHeightConstraint = tableViewContainer.heightAnchor.constraint(equalToConstant: 0)
         tableViewContainerHeightConstraint?.isActive = true
         
         NSLayoutConstraint.activate([
@@ -62,9 +67,25 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "CategoryCell")
+        tableView.separatorStyle = .none
+
+        
+        tableView.layer.cornerRadius = 16
+        tableView.layer.maskedCorners = [
+            .layerMinXMinYCorner,
+            .layerMaxXMinYCorner,
+            .layerMinXMaxYCorner,
+            .layerMaxXMaxYCorner
+        ]
+        tableView.layer.masksToBounds = true
+        tableView.backgroundColor = .gr
+        tableView.register(CategoryCell.self, forCellReuseIdentifier: "CategoryCell")
+        
         tableView.isHidden = true
         tableViewContainer.addSubview(tableView)
+        tableView.contentInset = .zero
+        tableView.contentInsetAdjustmentBehavior = .never
+        tableView.tableFooterView = UIView(frame: .zero)
         
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: tableViewContainer.topAnchor),
@@ -115,11 +136,10 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
             addCategoryButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             addCategoryButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
         ])
-        
     }
     
     func showCategories() {
-        let categories = categoriesServise.categories
+        let categories = viewModel.categories
         
         if categories.isEmpty {
             tableView.isHidden = true
@@ -133,7 +153,7 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
             tableView.reloadData()
             
             let newHeight = CGFloat(categories.count) * 75
-            tableViewContainerHeightConstraint?.constant = newHeight + 40
+            tableViewContainerHeightConstraint?.constant = newHeight
             
             UIView.animate(withDuration: 0.3) {
                 self.view.layoutIfNeeded()
@@ -142,43 +162,35 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return categoriesServise.categories.count
+        return viewModel.categories.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
-        
-        cell.textLabel?.text = categoriesServise.categories[indexPath.row]
-        
+        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath) as! CategoryCell
+        let category = viewModel.categories[indexPath.row]
+        cell.textLabel?.text = category
         cell.tag = indexPath.row
         
-        let interaction = UIContextMenuInteraction(delegate: self)
-        cell.addInteraction(interaction)
+        let isLast = indexPath.row == viewModel.categories.count - 1
+        cell.hideSeparator(isLast)
         
         cell.backgroundColor = .gr
         cell.selectionStyle = .none
+        cell.accessoryType = viewModel.isSelectedCategory(at: indexPath.row) ? .checkmark : .none
+        
+        let interaction = UIContextMenuInteraction(delegate: self)
+        cell.addInteraction(interaction)
         
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
-        if let selectedCell = tableView.cellForRow(at: indexPath) {
-            if selectedCell == currentSelectedCell {
-                
-                selectedCell.accessoryType = .none
-                currentSelectedCell = nil
-                nameOfChuseCategory = nil
-            } else {
-                
-                currentSelectedCell?.accessoryType = .none
-                
-                currentSelectedCell = selectedCell
-                currentSelectedCell?.accessoryType = .checkmark
-                nameOfChuseCategory = categoriesServise.categories[indexPath.row]
-            }
+        if viewModel.isSelectedCategory(at: indexPath.row) {
+            viewModel.deselectCategory()
+        } else {
+            viewModel.selectCategory(at: indexPath.row)
         }
+        tableView.reloadData()
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -186,9 +198,9 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
     }
     
     @objc func didTapaddCategoryButton() {
-        if let selectedCell = currentSelectedCell, selectedCell.accessoryType == .checkmark {
-            nameOfChuseCategory = categoriesServise.categories[selectedCell.tag]
-            categoriesServise.updateSelectedCategory(nameOfChuseCategory ?? "")
+        if let selected = viewModel.selectedCategory {
+            nameOfChuseCategory = selected
+            viewModel.updateSelectedCategory()
             
             NotificationCenter.default.post(name: CategoriesServise.didChangeCategories, object: nil)
             
@@ -214,36 +226,21 @@ extension CategoriesController: UIContextMenuInteractionDelegate {
             guard let self = self else { return UIMenu(title: "", children: []) }
             
             let editAction = UIAction(title: "Редактировать") { _ in
-                
                 let editCategoriesController = EditCategoriesController()
-                editCategoriesController.categoriesName = self.categoriesServise.categories[index]
+                editCategoriesController.categoriesName = self.viewModel.categories[index]
                 editCategoriesController.modalPresentationStyle = .automatic
+                editCategoriesController.onCategoryUpdated = {
+                                self.viewModel.loadCategories()
+                            }
                 self.present(editCategoriesController, animated: true, completion: nil)
             }
             
             let deleteAction = UIAction(title: "Удалить", attributes: .destructive) { _ in
-                self.showDeleteConfirmation(for: index)
+                self.viewModel.deleteCategory(at: index)
             }
             
             return UIMenu(title: "", children: [editAction, deleteAction])
         }
     }
-    
-    private func showDeleteConfirmation(for index: Int) {
-        let alert = UIAlertController(title: "",
-                                      message: "Эта категория точно не нужна?",
-                                      preferredStyle: .actionSheet)
-        
-        let cancelAction = UIAlertAction(title: "Отмена", style: .cancel, handler: nil)
-        let deleteAction = UIAlertAction(title: "Удалить", style: .destructive) { _ in
-            self.categoriesServise.categories.remove(at: index)
-            self.tableView.deleteRows(at: [IndexPath(row: index, section: 0)], with: .automatic)
-            self.categoriesServise.saveCategories()
-        }
-        
-        alert.addAction(cancelAction)
-        alert.addAction(deleteAction)
-        
-        present(alert, animated: true, completion: nil)
-    }
 }
+
