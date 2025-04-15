@@ -372,7 +372,6 @@ extension ViewController {
         updateCategoriesFromCoreData()
     }
     
-    
     func updateCategoriesFromCoreData() {
         
         do {
