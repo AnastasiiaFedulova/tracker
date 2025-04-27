@@ -40,7 +40,10 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
     private func setupUI() {
         let categoriesLabel = UILabel()
         categoriesLabel.textColor = .black
-        categoriesLabel.text = "Категория"
+        //categoriesLabel.text = "Категория"
+        categoriesLabel.text = NSLocalizedString("category.title", comment: "")
+
+        
         categoriesLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         categoriesLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(categoriesLabel)
@@ -104,7 +107,10 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
             starImage.topAnchor.constraint(equalTo: categoriesLabel.bottomAnchor, constant: 246)
         ])
         
-        labelStar.text = "Привычки и события можно \n объединить по смыслу"
+        //labelStar.text = "Привычки и события можно \n объединить по смыслу"
+        labelStar.text = NSLocalizedString("category.starTitle", comment: "")
+
+        
         labelStar.numberOfLines = 0
         labelStar.font = UIFont.systemFont(ofSize: 12, weight: .medium)
         labelStar.textColor = .black
@@ -119,7 +125,9 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
         ])
         
         let addCategoryButton = UIButton(type: .system)
-        addCategoryButton.setTitle("Добавить категорию", for: .normal)
+        //addCategoryButton.setTitle("Добавить категорию", for: .normal)
+        addCategoryButton.setTitle(NSLocalizedString("category.addButton", comment: ""), for: .normal)
+        
         addCategoryButton.setTitleColor(.white, for: .normal)
         addCategoryButton.backgroundColor = .black
         addCategoryButton.layer.cornerRadius = 16
@@ -225,7 +233,7 @@ extension CategoriesController: UIContextMenuInteractionDelegate {
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ in
             guard let self = self else { return UIMenu(title: "", children: []) }
             
-            let editAction = UIAction(title: "Редактировать") { _ in
+            let editAction = UIAction(title: NSLocalizedString("edit", comment: "")) { _ in
                 let editCategoriesController = EditCategoriesController()
                 editCategoriesController.categoriesName = self.viewModel.categories[index]
                 editCategoriesController.modalPresentationStyle = .automatic
@@ -235,9 +243,27 @@ extension CategoriesController: UIContextMenuInteractionDelegate {
                 self.present(editCategoriesController, animated: true, completion: nil)
             }
             
-            let deleteAction = UIAction(title: "Удалить", attributes: .destructive) { _ in
-                self.viewModel.deleteCategory(at: index)
+            let deleteAction = UIAction(title: NSLocalizedString("delete", comment: ""),
+                                        attributes: .destructive) { _ in
+                let alert = UIAlertController(
+                    title: nil,
+                    message: "Эта категория точно не нужна?",
+                    preferredStyle: .actionSheet
+                )
+
+                let confirmAction = UIAlertAction(title: "Удалить", style: .destructive) { _ in
+                    self.viewModel.deleteCategory(at: index)
+                }
+
+                let cancelAction = UIAlertAction(title: "Отменить", style: .cancel, handler: nil)
+
+                alert.addAction(confirmAction)
+                alert.addAction(cancelAction)
+
+                // Обязательно: показываем алерт из текущего контроллера
+                self.present(alert, animated: true, completion: nil)
             }
+
             
             return UIMenu(title: "", children: [editAction, deleteAction])
         }

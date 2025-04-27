@@ -12,20 +12,22 @@ final class TrackerTypesController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .white
         
-        let MakeTracker = UILabel()
-        MakeTracker.textColor = .black
-        MakeTracker.text = "Создание трекера"
-        MakeTracker.font = UIFont.systemFont(ofSize: 16, weight: .medium)
-        MakeTracker.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(MakeTracker)
+        let makeTracker = UILabel()
+        makeTracker.textColor = .black
+       // makeTracker.text = "Создание трекера"
+        makeTracker.text = NSLocalizedString("trecerTipes.title", comment: "")
+        makeTracker.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        makeTracker.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(makeTracker)
         
         NSLayoutConstraint.activate([
-            MakeTracker.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            MakeTracker.topAnchor.constraint(equalTo: view.topAnchor, constant: 38)
+            makeTracker.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            makeTracker.topAnchor.constraint(equalTo: view.topAnchor, constant: 38)
         ])
         
         let buttonHabit = UIButton(type: .custom)
-        buttonHabit.setTitle("Привычка", for: .normal)
+        //buttonHabit.setTitle("Привычка", for: .normal)
+        buttonHabit.setTitle(NSLocalizedString("trecerTipes.habbitTitel", comment: ""), for: .normal)
         buttonHabit.setTitleColor(.white, for: .normal)
         buttonHabit.backgroundColor = .black
         buttonHabit.layer.cornerRadius = 16
@@ -46,7 +48,8 @@ final class TrackerTypesController: UIViewController {
         ])
         
         let buttonIrregularEvent = UIButton(type: .system)
-        buttonIrregularEvent.setTitle("Нерегулярное событие", for: .normal)
+        //buttonIrregularEvent.setTitle("Нерегулярное событие", for: .normal)
+        buttonIrregularEvent.setTitle(NSLocalizedString("trecerTipes.irregularTitel", comment: ""), for: .normal)
         buttonIrregularEvent.setTitleColor(.white, for: .normal)
         buttonIrregularEvent.backgroundColor = .black
         buttonIrregularEvent.layer.cornerRadius = 16

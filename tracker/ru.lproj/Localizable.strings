@@ -1,0 +1,54 @@
+/* 
+  Localizable.strings
+  tracker
+
+  Created by Anastasiia on 13.04.2025.
+  
+*/
+
+"onbording.firstTitle" = "Отслеживайте только \n то, что хотите";
+"onbording.secondTitle" = "Даже если это \n не литры воды и йога";
+"onbording.botton" = "Вот это технологии!";
+
+"trecers.title" = "Трекеры";
+"trecers.findTitle" = "Поиск";
+"trecers.starTitle" = "Что будем отслеживать?";
+"tapbar.title" = "Статистика";
+"filtrs" = "Фильтры";
+
+"trecerTipes.title" = "Создание трекера";
+"trecerTipes.habbitTitel" = "Привычка";
+"trecerTipes.irregularTitel" = "Нерегулярные событие";
+
+"newHabbit.title" = "Новая привычка";
+"irregular.title" = "Новое нерегулярное событие";
+"newHabbbit.name" = "Введите название трекера";
+"newHabbit.category" = "Категория";
+"newHabbit.schedule" = "Расписание";
+"emoji" = "Emoji";
+"color" = "Цвет";
+"cancell" = "Отменить";
+"create" = "Создать";
+
+"category.title" = "Категория";
+"category.starTitle" = "Привычки и события можно \n объединить по смыслу";
+"category.addButton" = "Добавить категорию";
+
+"newCategory.tytle" = "Новая категория";
+"newCategory.name" = "Введите название категории";
+"done" = "Готово";
+
+"schedule" = "Расписание";
+"edit" = "Редактировать";
+"delete" = "Удалить";
+
+"editCategory" = "Редактирование категории";
+
+"monday" = "Понедельник";
+"tuesday" = "Вторник";
+"wednesday" = "Среда";
+"thursday" = "Четверг";
+"friday" = "Пятница";
+"saturday" = "Суббота";
+"sunday" = "Воскресенье";
+

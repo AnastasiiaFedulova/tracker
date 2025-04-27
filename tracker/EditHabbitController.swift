@@ -1,30 +1,74 @@
-// NewIrregularEventController.swift
-// tracker
 //
-// Created by Anastasiia on 26.02.2025.
+//  EditHabbitController.swift
+//  tracker
+//
+//  Created by Anastasiia on 15.04.2025.
 //
 
+import Foundation
 import UIKit
 
-final class NewIrregularEventController: UIViewController,UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
+final class EditHabbitController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, ScheduleControllerDelegate {
     
-    let categoriesServise = CategoriesServise.shared
-    var chuseCategoriesName: String = ""
-    let categoriesController = CategoriesController()
+    var habbitText: String?
+    var tracker: Tracker?
+    var dayText: String?
+    var sceduleText: String?
+    var categoyText: String?
+    var selEmoji: String?
+    var selColor: UIColor?
+    var trackerToEdit: TrackerCoreData?
+    
+    private var selectedWeekdays: [Weekday] = []
+    
+    func didSelectSchedule(_ days: [Weekday]) {
+        
+        selectedWeekdays = days
+        
+        let allWeekdays: [Weekday] = [.Monday, .Tuesday, .Wednesday, .Thursday, .Friday, .Saturday, .Sunday]
+        
+        if Set(days) == Set(allWeekdays) {
+            chuseScheduleLabel.text = "Все дни"
+        } else {
+            let shortNames = days.map { $0.shortName }.joined(separator: ", ")
+            DispatchQueue.main.async {
+                self.chuseScheduleLabel.text = shortNames
+                self.view.layoutIfNeeded()
+            }
+            updateCreateButtonState()
+        }
+        scheduleLabelTopConstraint?.isActive = false
+        scheduleLabelTopConstraintSmall?.isActive = true
+    }
+    
+    @objc private func openSchedule() {
+        let scheduleVC = ScheduleController()
+        scheduleVC.delegate = self
+        present(scheduleVC, animated: true)
+    }
+    
+    let chuseScheduleLabel = UILabel()
+    let scheduleLabel = UILabel()
     let categories = UILabel()
     let chuseCategoriesNames = UILabel()
     let name = UITextField()
     private let clearButton = UIButton(type: .custom)
     private let tableView = UITableView()
-    private let tableData = ["Категория"]
+    private var tableData = [["Категория"], ["Расписание"]]
+    let categoriesServise = CategoriesServise.shared
     private var selectedEmojiIndex: IndexPath?
-    private var selectedColorIndex: IndexPath?
+    var selectedColorIndex: IndexPath?
     var selectedEmoji: String?
     var selectedColors: String?
     let createButton = UIButton(type: .system)
+    let sceduleService = SceduleService.shared
     
     private var categoriesTopConstraint: NSLayoutConstraint?
     private var categoriesTopConstraintSmall: NSLayoutConstraint?
+    
+    private var scheduleLabelTopConstraint: NSLayoutConstraint?
+    private var scheduleLabelTopConstraintSmall: NSLayoutConstraint?
+    
     
     private let emogies = [ "🙂", "😻", "🌺", "🐶", "❤️", "😱", "😇", "😡", "🥶", "🤔", "🙌", "🍔", "🥦", "🏓", "🥇", "🎸", "🏝", "😪"]
     
@@ -32,12 +76,11 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         .colorSelection1, .colorSelection2, .colorSelection3, .colorSelection4, .colorSelection5, .colorSelection6, .colorSelection7, .colorSelection8, .colorSelection9, .colorSelection10, .colorSelection11, .colorSelection12, .colorSelection13, .colorSelection14, .colorSelection15, .colorSelection16, .colorSelection17, .colorSelection18
     ]
     
-    private var selectedColor: UIColor?
+    var selectedColor: UIColor?
     
     private var emojiCollectionView: UICollectionView!
     private var colorCollectionView: UICollectionView!
-    let sceduleService = SceduleService.shared
-    
+    let dayCount = UILabel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -57,8 +100,23 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
                 categoriesTopConstraintSmall?.isActive = true
             }
         
-        setupClearButton()
-        name.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        if let emoji = selectedEmoji, let index = emogies.firstIndex(of: emoji) {
+            selectedEmojiIndex = IndexPath(item: index, section: 0)
+        }
+
+        if let color = selectedColor {
+            if let index = colors.firstIndex(where: { $0.toHex() == color.toHex() }) {
+                selectedColorIndex = IndexPath(item: index, section: 0)
+            }
+        }
+    
+        if let tracker = tracker {
+            name.text = habbitText
+            dayCount.text = dayText
+            chuseScheduleLabel.text = sceduleText
+            chuseCategoriesNames.text = categoyText
+        }
+    
         
         let scrollView = UIScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
@@ -68,27 +126,46 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         contentView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(contentView)
         
+        setupClearButton()
+        name.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        
         view.backgroundColor = .white
         
-        let NewIrregularEventLabel = UILabel()
-        NewIrregularEventLabel.textColor = .black
-       // NewIrregularEventLabel.text = "Новое нерегулярное событие"
-        NewIrregularEventLabel.text = NSLocalizedString("irregular.title", comment: "")
+        let editHabbitLabel = UILabel()
+        editHabbitLabel.textColor = .black
+        editHabbitLabel.text = "Редактирование привычки"
+        //NewIrregularEventLabel.text = NSLocalizedString("newHabbit.title", comment: "")
         
-        NewIrregularEventLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
-        NewIrregularEventLabel.textAlignment = .center
-        NewIrregularEventLabel.translatesAutoresizingMaskIntoConstraints = false
-        
-        contentView.addSubview(NewIrregularEventLabel)
+        editHabbitLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        editHabbitLabel.textAlignment = .center
+        editHabbitLabel.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(editHabbitLabel)
+        editHabbitLabel.setContentHuggingPriority(.required, for: .vertical)
+        editHabbitLabel.setContentCompressionResistancePriority(.required, for: .vertical)
         
         NSLayoutConstraint.activate([
-            NewIrregularEventLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            NewIrregularEventLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 30)
+            editHabbitLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            editHabbitLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 38)
         ])
         
-        //name.placeholder = "Введите название трекера"
-        name.placeholder = NSLocalizedString("newHabbbit.name", comment: "")
+//        let dayCount = UILabel()
+        dayCount.textColor = .black
+        dayCount.text = dayText
+        //NewIrregularEventLabel.text = NSLocalizedString("newHabbit.title", comment: "")
         
+        dayCount.font = UIFont.systemFont(ofSize: 32, weight: .bold)
+        dayCount.textAlignment = .center
+        dayCount.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(dayCount)
+        dayCount.setContentHuggingPriority(.required, for: .vertical)
+        dayCount.setContentCompressionResistancePriority(.required, for: .vertical)
+        
+        NSLayoutConstraint.activate([
+            dayCount.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            dayCount.topAnchor.constraint(equalTo: editHabbitLabel.topAnchor, constant: 38)
+        ])
+        
+        name.placeholder = "Введите название трекера"
         name.textColor = .black
         name.backgroundColor = .gr
         name.layer.cornerRadius = 16
@@ -96,64 +173,17 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         name.delegate = self
         name.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         name.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(name)
         name.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 1))
         name.leftViewMode = .always
         
-        contentView.addSubview(name)
-        
-        name.setContentHuggingPriority(.required, for: .vertical)
-        name.setContentCompressionResistancePriority(.required, for: .vertical)
-        
         NSLayoutConstraint.activate([
             name.widthAnchor.constraint(equalToConstant: 343),
+            
             name.heightAnchor.constraint(equalToConstant: 75),
             name.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             name.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            name.topAnchor.constraint(equalTo: NewIrregularEventLabel.bottomAnchor, constant: 38)
-        ])
-        
-        tableView.separatorStyle = .none
-        tableView.delegate = self
-        tableView.dataSource = self
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
-        tableView.layer.cornerRadius = 16
-        tableView.backgroundColor = .gr
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(tableView)
-        
-        NSLayoutConstraint.activate([
-            tableView.widthAnchor.constraint(equalToConstant: 343),
-            tableView.heightAnchor.constraint(equalToConstant: 75),
-            tableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            tableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            tableView.topAnchor.constraint(equalTo: name.bottomAnchor, constant: 20)
-        ])
-        
-        categoriesTopConstraint = categories.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 27)
-        categoriesTopConstraintSmall = categories.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 15)
-        
-        //categories.text = "Категория"
-        categories.text = NSLocalizedString("newHabbit.category", comment: "")
-        
-        categories.textColor = .forText
-        categories.font = UIFont.systemFont(ofSize: 17, weight: .regular)
-        categories.translatesAutoresizingMaskIntoConstraints = false
-        tableView.addSubview(categories)
-        
-        NSLayoutConstraint.activate([
-            categories.leadingAnchor.constraint(equalTo: tableView.leadingAnchor, constant: 16),
-            categories.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 27)
-        ])
-        
-        chuseCategoriesNames.text = chuseCategoriesName
-        chuseCategoriesNames.textColor = .greyButton
-        chuseCategoriesNames.font = UIFont.systemFont(ofSize: 17, weight: .regular)
-        chuseCategoriesNames.translatesAutoresizingMaskIntoConstraints = false
-        tableView.addSubview(chuseCategoriesNames)
-        
-        NSLayoutConstraint.activate([
-            chuseCategoriesNames.leadingAnchor.constraint(equalTo: tableView.leadingAnchor, constant: 16),
-            chuseCategoriesNames.topAnchor.constraint(equalTo: categories.bottomAnchor, constant: 2),
+            name.topAnchor.constraint(equalTo:  dayCount.bottomAnchor, constant: 40)
         ])
         
         let emojiLabel = UILabel()
@@ -163,7 +193,6 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         emojiLabel.textColor = .black
         emojiLabel.font = UIFont.systemFont(ofSize: 19, weight: .bold)
         emojiLabel.translatesAutoresizingMaskIntoConstraints = false
-        
         contentView.addSubview(emojiLabel)
         emojiLabel.setContentHuggingPriority(.required, for: .vertical)
         emojiLabel.setContentCompressionResistancePriority(.required, for: .vertical)
@@ -172,7 +201,79 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
             emojiLabel.widthAnchor.constraint(equalToConstant: 52),
             emojiLabel.heightAnchor.constraint(equalToConstant: 18),
             emojiLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 28),
-            emojiLabel.topAnchor.constraint(equalTo: name.bottomAnchor, constant: 131)
+            emojiLabel.topAnchor.constraint(equalTo: name.bottomAnchor, constant: 206)
+        ])
+        
+        tableView.separatorColor = .greyButton
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        tableView.layer.cornerRadius = 16
+        tableView.backgroundColor = .gr
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.reloadData()
+        tableView.isScrollEnabled = false
+        contentView.addSubview(tableView)
+        
+        
+        NSLayoutConstraint.activate([
+            tableView.widthAnchor.constraint(equalToConstant: 343),
+            tableView.heightAnchor.constraint(equalToConstant: CGFloat(tableData.flatMap { $0 }.count) * 75),
+            tableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            tableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            tableView.topAnchor.constraint(equalTo: name.bottomAnchor, constant: 20)
+        ])
+        
+        
+        categoriesTopConstraint = categories.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 27)
+        categoriesTopConstraintSmall = categories.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 15)
+        scheduleLabelTopConstraint = scheduleLabel.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 101)
+        scheduleLabelTopConstraintSmall = scheduleLabel.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 90)
+        
+       // categories.text = "Категория"
+        categories.text = NSLocalizedString("newHabbit.category", comment: "")
+        
+        categories.textColor = .forText
+        categories.font = UIFont.systemFont(ofSize: 17, weight: .regular)
+        categories.translatesAutoresizingMaskIntoConstraints = false
+        tableView.addSubview(categories)
+        
+        NSLayoutConstraint.activate([
+            categories.leadingAnchor.constraint(equalTo: tableView.leadingAnchor, constant: 16),
+            categories.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 15)
+        ])
+        
+        chuseCategoriesNames.textColor = .greyButton
+        chuseCategoriesNames.font = UIFont.systemFont(ofSize: 17, weight: .regular)
+        chuseCategoriesNames.translatesAutoresizingMaskIntoConstraints = false
+        tableView.addSubview(chuseCategoriesNames)
+        
+        NSLayoutConstraint.activate([
+            chuseCategoriesNames.leadingAnchor.constraint(equalTo: tableView.leadingAnchor, constant: 16),
+            chuseCategoriesNames.topAnchor.constraint(equalTo: categories.bottomAnchor, constant: 2)
+        ])
+        
+        //scheduleLabel.text = "Расписание"
+        scheduleLabel.text = NSLocalizedString("newHabbit.schedule", comment: "")
+        
+        scheduleLabel.textColor = .forText
+        scheduleLabel.font = UIFont.systemFont(ofSize: 17, weight: .regular)
+        scheduleLabel.translatesAutoresizingMaskIntoConstraints = false
+        tableView.addSubview(scheduleLabel)
+        
+        NSLayoutConstraint.activate([
+            scheduleLabel.leadingAnchor.constraint(equalTo: tableView.leadingAnchor, constant: 16),
+            scheduleLabel.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 90)
+        ])
+        
+        chuseScheduleLabel.textColor = .greyButton
+        chuseScheduleLabel.font = UIFont.systemFont(ofSize: 17, weight: .regular)
+        chuseScheduleLabel.translatesAutoresizingMaskIntoConstraints = false
+        tableView.addSubview( chuseScheduleLabel)
+        
+        NSLayoutConstraint.activate([
+            chuseScheduleLabel.leadingAnchor.constraint(equalTo: tableView.leadingAnchor, constant: 16),
+            chuseScheduleLabel.topAnchor.constraint(equalTo: scheduleLabel.bottomAnchor, constant: 2)
         ])
         
         let emojiLayout = UICollectionViewFlowLayout()
@@ -187,10 +288,8 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         emojiCollectionView.delegate = self
         emojiCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "EmojiCell")
         emojiCollectionView.translatesAutoresizingMaskIntoConstraints = false
-        
         contentView.addSubview(emojiCollectionView)
         emojiCollectionView.setContentHuggingPriority(.required, for: .vertical)
-        
         
         NSLayoutConstraint.activate([
             emojiCollectionView.topAnchor.constraint(equalTo: emojiLabel.bottomAnchor, constant: 20),
@@ -210,14 +309,12 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         colorCollectionView.delegate = self
         colorCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "ColorCell")
         colorCollectionView.translatesAutoresizingMaskIntoConstraints = false
-        
         contentView.addSubview(colorCollectionView)
         
         NSLayoutConstraint.activate([
-            colorCollectionView.topAnchor.constraint(equalTo: emojiLabel.bottomAnchor, constant: 268),
+            colorCollectionView.topAnchor.constraint(equalTo: emojiLabel.bottomAnchor, constant: 262),
             colorCollectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             colorCollectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            
             colorCollectionView.heightAnchor.constraint(equalToConstant: 200)
         ])
         
@@ -228,18 +325,17 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         color.textColor = .black
         color.font = UIFont.systemFont(ofSize: 19, weight: .bold)
         color.translatesAutoresizingMaskIntoConstraints = false
-        
         contentView.addSubview(color)
         
         NSLayoutConstraint.activate([
             color.widthAnchor.constraint(equalToConstant: 52),
             color.heightAnchor.constraint(equalToConstant: 18),
             color.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 28),
-            color.topAnchor.constraint(equalTo: name.bottomAnchor, constant: 369)
+            color.topAnchor.constraint(equalTo: name.bottomAnchor, constant: 444)
         ])
         
         let cancellButton = UIButton(type: .system)
-       // cancellButton.setTitle("Отменить", for: .normal)
+        //cancellButton.setTitle("Отменить", for: .normal)
         cancellButton.setTitle(NSLocalizedString("cancell", comment: ""), for: .normal)
         
         cancellButton.setTitleColor(.button, for: .normal)
@@ -248,8 +344,8 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         cancellButton.layer.borderColor = UIColor.button.cgColor
         cancellButton.layer.cornerRadius = 16
         cancellButton.translatesAutoresizingMaskIntoConstraints = false
-        
         contentView.addSubview(cancellButton)
+        cancellButton.setContentCompressionResistancePriority(.required, for: .vertical)
         cancellButton.addTarget(self, action: #selector(didTapCancelButton), for: .touchUpInside)
         
         cancellButton.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
@@ -262,22 +358,22 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
             cancellButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
         ])
         
-        scrollView.contentSize = CGSize(width: view.frame.width, height: 1000)
-        scrollView.showsVerticalScrollIndicator = true
-        
-       // createButton.setTitle("Создать", for: .normal)
+        //createButton.setTitle("Создать", for: .normal)
         createButton.setTitle(NSLocalizedString("create", comment: ""), for: .normal)
         
         createButton.setTitleColor(.white, for: .normal)
         createButton.backgroundColor = .greyButton
+        createButton.setContentCompressionResistancePriority(.required, for: .vertical)
+        createButton.isEnabled = false
+        
         
         createButton.layer.cornerRadius = 16
         createButton.translatesAutoresizingMaskIntoConstraints = false
-        
         contentView.addSubview(createButton)
         createButton.addTarget(self, action: #selector(didTapCreateButton), for: .touchUpInside)
         
         createButton.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        
         NSLayoutConstraint.activate([
             createButton.widthAnchor.constraint(equalToConstant: 166),
             createButton.heightAnchor.constraint(equalToConstant:60),
@@ -286,7 +382,7 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         ])
         
         NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: view.topAnchor),
+            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -295,12 +391,8 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
             contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
-            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
+            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
         ])
-    }
-    
-    func setCategoryName(_ name: String) {
-        self.chuseCategoriesName = name
     }
     
     private func setupClearButton() {
@@ -317,7 +409,6 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         name.rightViewMode = .whileEditing
         clearButton.isHidden = true
     }
-    
     @objc private func textFieldDidChange() {
         clearButton.isHidden = name.text?.isEmpty ?? true
         updateCreateButtonState()
@@ -329,13 +420,13 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        textField.resignFirstResponder() // клавиатура закрытие
+        textField.resignFirstResponder() // Скрываем клавиатуру
         return true
     }
-    
     func updateCreateButtonState() {
         let isFormValid = !(name.text?.isEmpty ?? true) &&
         !(chuseCategoriesNames.text?.isEmpty ?? true) &&
+        !(chuseScheduleLabel.text?.isEmpty ?? true) &&
         selectedEmoji != nil &&
         selectedColor != nil
         
@@ -352,33 +443,49 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         return 75
     }
     
-    @objc func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return tableData.count
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return tableData[section].count
     }
     
-    @objc(tableView:cellForRowAtIndexPath:) internal func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 2
+    }
+    
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        cell.textLabel?.text = tableData[indexPath.row]
+        cell.textLabel?.text = tableData[indexPath.section][indexPath.row]
         cell.accessoryType = .disclosureIndicator
         cell.textLabel?.textColor = .clear
         cell.backgroundColor = .gr
+        
+        if indexPath.section == tableData.count - 1 && indexPath.row == tableData[indexPath.section].count - 1 {
+            cell.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: tableView.bounds.width)
+        } else {
+            cell.separatorInset = UIEdgeInsets(top: 0, left: 15, bottom: 0, right: 15)
+        }
         
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        let selectedOption = tableData[indexPath.row]
+        let selectedOption = tableData[indexPath.section][indexPath.row]
         
         if selectedOption == "Категория" {
             let categoriesController = CategoriesController()
             present(categoriesController, animated: true)
+        } else if selectedOption == "Расписание" {
+            let scheduleVC = ScheduleController()
+            scheduleVC.delegate = self
+            present(scheduleVC, animated: true)
+            let scheduleController = ScheduleController()
+            present(scheduleController, animated: true)
         }
     }
-    
 }
 
-extension NewIrregularEventController {
+extension EditHabbitController {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if collectionView == emojiCollectionView {
             return emogies.count
@@ -418,7 +525,6 @@ extension NewIrregularEventController {
             }
             return cell
         }
-        
         
         if collectionView == colorCollectionView {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ColorCell", for: indexPath)
@@ -476,6 +582,7 @@ extension NewIrregularEventController {
             } else {
                 outerView.alpha = 0
             }
+            
             return cell
         }
         
@@ -483,7 +590,7 @@ extension NewIrregularEventController {
     }
 }
 
-extension NewIrregularEventController {
+extension EditHabbitController {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if collectionView == colorCollectionView {
             if selectedColorIndex == indexPath {
@@ -507,24 +614,27 @@ extension NewIrregularEventController {
         updateCreateButtonState()
     }
     
-    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         if collectionView == colorCollectionView {
             let itemsPerRow: CGFloat = 6
             let spacing: CGFloat = 10
             let totalSpacing = (itemsPerRow - 1) * spacing
-            let itemWidth = (collectionView.frame.width - totalSpacing) / itemsPerRow
-            return CGSize(width: itemWidth, height: 50)
+            let availableWidth = collectionView.bounds.width - totalSpacing
+            let itemSize = floor(availableWidth / itemsPerRow)
+            
+            return CGSize(width: itemSize, height: itemSize)
         }
         
         if collectionView == emojiCollectionView {
-            
             let itemsPerRow: CGFloat = 6
             let spacing: CGFloat = 10
             let totalSpacing = (itemsPerRow - 1) * spacing
-            let itemWidth = (collectionView.frame.width - totalSpacing) / itemsPerRow
-            return CGSize(width: itemWidth, height: 52)
+            let availableWidth = collectionView.bounds.width - totalSpacing
+            let itemSize = floor(availableWidth / itemsPerRow)
+            
+            return CGSize(width: itemSize, height: itemSize)
         }
+        
         return CGSize(width: 52, height: 52)
     }
     
@@ -532,81 +642,144 @@ extension NewIrregularEventController {
         dismiss(animated: true)
     }
     
+    //    @objc func didTapCreateButton() {
+    //        print("Кнопка 'Создать' нажата")
+    //
+    //        let weekdayArray = sceduleService.selectedWeekdays.compactMap { Weekday(rawValue: $0.rawValue) }
+    //
+    //        if weekdayArray.isEmpty {
+    //            print("Ошибка: Не выбраны дни недели для календаря")
+    //            return
+    //        }
+    //
+    //        guard let calendarData = try? JSONEncoder().encode(weekdayArray) else {
+    //            print("Ошибка при кодировании календаря в Data")
+    //            return
+    //        }
+    //
+    //        let context = PersistenceController.shared.context
+    //
+    //        let isCompleted = false
+    //        var category: TrackerCategoryCoreData? = nil
+    //
+    //        if let categoryName = chuseCategoriesNames.text, !categoryName.isEmpty {
+    //            category = CoreDataService.shared.fetchCategory(byName: categoryName, context: context)
+    //
+    //            if category == nil {
+    //                category = CoreDataService.shared.createCategory(name: categoryName, context: context)
+    //            }
+    //        }
+    //
+    //        let newTrackerCoreData = TrackerCoreData(context: context)
+    //        newTrackerCoreData.id = UUID()
+    //        newTrackerCoreData.name = name.text ?? ""
+    //        newTrackerCoreData.color = selectedColors
+    //        newTrackerCoreData.emoji = selectedEmoji
+    //        newTrackerCoreData.calendar = calendarData as NSData
+    //        newTrackerCoreData.isCompleted = isCompleted
+    //
+    //        if let category = category {
+    //            newTrackerCoreData.category = category
+    //        }
+    //
+    //        do {
+    //            try context.save()
+    //            print("Трекер успешно сохранен в Core Data")
+    //        } catch {
+    //            print("Ошибка сохранения в Core Data: \(error)")
+    //            return
+    //        }
+    //
+    //        var targetVC = presentingViewController
+    //        while targetVC != nil {
+    //            if let tabBarController = targetVC as? UITabBarController {
+    //                for viewController in tabBarController.viewControllers ?? [] {
+    //                    if let viewController = viewController as? ViewController {
+    //
+    //                        viewController.addTracker(forCategory: chuseCategoriesNames.text ?? "", trackerCoreData: newTrackerCoreData)
+    //                        viewController.dismiss(animated: true, completion: {
+    //                            self.dismiss(animated: true, completion: nil)
+    //                        })
+    //                        return
+    //                    }
+    //                }
+    //            }
+    //            targetVC = targetVC?.presentingViewController
+    //        }
+    //
+    //        print("Не удалось найти нужный ViewController")
+    //        dismiss(animated: true)
+    //    }
+    //
     @objc func didTapCreateButton() {
         print("Кнопка 'Создать' нажата")
-        let currentData = Date()
         
+        guard let trackerToEdit else {
+            print("Ошибка: trackerToEdit не задан, редактирование невозможно")
+            return
+        }
+
         let context = PersistenceController.shared.context
-        var category: TrackerCategoryCoreData? = nil
+
+        // 🗓 Дни недели
+        let selectedWeekdays = sceduleService.selectedWeekdays
+        let weekdayArray: [Weekday]
         
+        if selectedWeekdays.isEmpty,
+           let data = trackerToEdit.calendar as! Data?,
+           let decoded = try? JSONDecoder().decode([Weekday].self, from: data) {
+            weekdayArray = decoded
+        } else {
+            weekdayArray = selectedWeekdays
+        }
+
+        guard !weekdayArray.isEmpty else {
+            print("Ошибка: не выбраны дни недели и нет сохранённых")
+            return
+        }
+
+        guard let calendarData = try? JSONEncoder().encode(weekdayArray) else {
+            print("Ошибка при кодировании календаря")
+            return
+        }
+
+        // 📂 Категория
+        var category: TrackerCategoryCoreData?
         if let categoryName = chuseCategoriesNames.text, !categoryName.isEmpty {
             category = CoreDataService.shared.fetchCategory(byName: categoryName, context: context)
-            
             if category == nil {
                 category = CoreDataService.shared.createCategory(name: categoryName, context: context)
             }
         }
-        
-        let newTrackerCoreData = TrackerCoreData(context: context)
-        newTrackerCoreData.id = UUID()
-        newTrackerCoreData.name = name.text ?? ""
-        newTrackerCoreData.color = selectedColors
-        newTrackerCoreData.emoji = selectedEmoji
-        newTrackerCoreData.isCompleted = false
-        
-        if let category = category {
-            newTrackerCoreData.category = category
-        }
-        
-        let calendar = Calendar.current
-        let today = Date()
-        let startOfDay = calendar.startOfDay(for: today)
-        
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        let formattedDate = dateFormatter.string(from: startOfDay)
-        
-        newTrackerCoreData.date = formattedDate
-        print("Сохраняем дату в Core Data: \(formattedDate)")
-        
+
+        // ✏️ Обновление трекера
+        trackerToEdit.name = name.text ?? trackerToEdit.name
+        trackerToEdit.color = selectedColors
+        trackerToEdit.emoji = selectedEmoji
+        trackerToEdit.calendar = calendarData as NSData
+        trackerToEdit.category = category
+
         do {
             try context.save()
-            print("Трекер успешно сохранен в Core Data.")
+            print("Трекер обновлён и сохранён")
         } catch {
-            print("Ошибка сохранения в Core Data: \(error)")
+            print("Ошибка при сохранении: \(error)")
             return
         }
-        
-        print("Добавляем трекер в категорию через Core Data")
-        if let category = category {
-            newTrackerCoreData.category = category
-        }
-        
-        do {
-            try context.save()
-            print("Категория и трекер обновлены в Core Data")
-        } catch {
-            print("Ошибка при обновлении категории в Core Data: \(error)")
-        }
-        
-        var targetVC = presentingViewController
-        while targetVC != nil {
-            if let tabBarController = targetVC as? UITabBarController {
-                for viewController in tabBarController.viewControllers ?? [] {
-                    if let viewController = viewController as? ViewController {
-                        
-                        viewController.addTracker(forCategory: chuseCategoriesNames.text ?? "", trackerCoreData: newTrackerCoreData)
-                        viewController.dismiss(animated: true, completion: {
-                            self.dismiss(animated: true, completion: nil)
-                        })
-                        return
+
+        // 🔄 Обновление главного экрана
+        if let tabBarController = presentingViewController as? UITabBarController {
+            for case let navVC as UINavigationController in tabBarController.viewControllers ?? [] {
+                for vc in navVC.viewControllers {
+                    if let viewController = vc as? ViewController {
+                        viewController.reloadData()
+                        break
                     }
                 }
             }
-            targetVC = targetVC?.presentingViewController
         }
-        
-        print("Не удалось найти нужный ViewController")
+
         dismiss(animated: true)
     }
+
 }

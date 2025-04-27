@@ -11,7 +11,6 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
     private var selectedWeekdays: [Weekday] = []
     
     func didSelectSchedule(_ days: [Weekday]) {
-        print("Метод didSelectSchedule вызывается с днями:", days)
         
         selectedWeekdays = days
         
@@ -105,7 +104,9 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
         
         let NewIrregularEventLabel = UILabel()
         NewIrregularEventLabel.textColor = .black
-        NewIrregularEventLabel.text = "Новая привычка"
+        //NewIrregularEventLabel.text = "Новая привычка"
+        NewIrregularEventLabel.text = NSLocalizedString("newHabbit.title", comment: "")
+        
         NewIrregularEventLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         NewIrregularEventLabel.textAlignment = .center
         NewIrregularEventLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -118,7 +119,9 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
             NewIrregularEventLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 38)
         ])
         
-        name.placeholder = "Введите название трекера"
+        //name.placeholder = "Введите название трекера"
+        name.placeholder = NSLocalizedString("newHabbbit.name", comment: "")
+        
         name.textColor = .black
         name.backgroundColor = .gr
         name.layer.cornerRadius = 16
@@ -140,7 +143,9 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
         ])
         
         let emojiLabel = UILabel()
-        emojiLabel.text = "Emoji"
+        //emojiLabel.text = "Emoji"
+        emojiLabel.text = NSLocalizedString("emoji", comment: "")
+        
         emojiLabel.textColor = .black
         emojiLabel.font = UIFont.systemFont(ofSize: 19, weight: .bold)
         emojiLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -181,7 +186,9 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
         scheduleLabelTopConstraint = scheduleLabel.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 101)
         scheduleLabelTopConstraintSmall = scheduleLabel.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 90)
         
-        categories.text = "Категория"
+       // categories.text = "Категория"
+        categories.text = NSLocalizedString("newHabbit.category", comment: "")
+        
         categories.textColor = .forText
         categories.font = UIFont.systemFont(ofSize: 17, weight: .regular)
         categories.translatesAutoresizingMaskIntoConstraints = false
@@ -202,7 +209,9 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
             chuseCategoriesNames.topAnchor.constraint(equalTo: categories.bottomAnchor, constant: 2)
         ])
         
-        scheduleLabel.text = "Расписание"
+        //scheduleLabel.text = "Расписание"
+        scheduleLabel.text = NSLocalizedString("newHabbit.schedule", comment: "")
+        
         scheduleLabel.textColor = .forText
         scheduleLabel.font = UIFont.systemFont(ofSize: 17, weight: .regular)
         scheduleLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -266,7 +275,9 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
         ])
         
         let color = UILabel()
-        color.text = "Цвет"
+        //color.text = "Цвет"
+        color.text = NSLocalizedString("color", comment: "")
+        
         color.textColor = .black
         color.font = UIFont.systemFont(ofSize: 19, weight: .bold)
         color.translatesAutoresizingMaskIntoConstraints = false
@@ -280,7 +291,9 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
         ])
         
         let cancellButton = UIButton(type: .system)
-        cancellButton.setTitle("Отменить", for: .normal)
+        //cancellButton.setTitle("Отменить", for: .normal)
+        cancellButton.setTitle(NSLocalizedString("cancell", comment: ""), for: .normal)
+        
         cancellButton.setTitleColor(.button, for: .normal)
         cancellButton.backgroundColor = .white
         cancellButton.layer.borderWidth = 1
@@ -301,7 +314,9 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
             cancellButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
         ])
         
-        createButton.setTitle("Создать", for: .normal)
+        //createButton.setTitle("Создать", for: .normal)
+        createButton.setTitle(NSLocalizedString("create", comment: ""), for: .normal)
+        
         createButton.setTitleColor(.white, for: .normal)
         createButton.backgroundColor = .greyButton
         createButton.setContentCompressionResistancePriority(.required, for: .vertical)
