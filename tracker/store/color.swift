@@ -4,7 +4,6 @@
 //
 //  Created by Anastasiia on 26.03.2025.
 //
-
 import UIKit
 
 final class Colors {

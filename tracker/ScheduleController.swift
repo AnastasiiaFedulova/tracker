@@ -4,7 +4,6 @@
 //
 //  Created by Anastasiia on 28.02.2025.
 //
-
 import UIKit
 
 protocol ScheduleControllerDelegate: AnyObject {
@@ -40,14 +39,13 @@ final class ScheduleController: UIViewController, UITableViewDataSource, UITable
     }
     
     private let tableView = UITableView()
-    private let tableData = [[NSLocalizedString("monday", comment: "")
-], [NSLocalizedString("tuesday", comment: "")
-], [NSLocalizedString("wednesday", comment: "")
-], [NSLocalizedString("thursday", comment: "")
-], [NSLocalizedString("friday", comment: "")
-], [NSLocalizedString("saturday", comment: "")
-], [NSLocalizedString("sunday", comment: "")
-]]
+    private let tableData = [[NSLocalizedString("monday", comment: "")],
+                             [NSLocalizedString("tuesday", comment:"")],
+                             [NSLocalizedString("wednesday", comment: "")],
+                             [NSLocalizedString("thursday", comment: "")],
+                             [NSLocalizedString("friday", comment: "")],
+                             [NSLocalizedString("saturday", comment: "")],
+                             [NSLocalizedString("sunday", comment: "")]]
     
     override func viewDidLoad() {
         
@@ -60,7 +58,6 @@ final class ScheduleController: UIViewController, UITableViewDataSource, UITable
         let scheduleLabel = UILabel()
         
         scheduleLabel.textColor = .black
-        //scheduleLabel.text = "Расписание"
         scheduleLabel.text = NSLocalizedString("schedule", comment: "")
         
         scheduleLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
@@ -92,7 +89,6 @@ final class ScheduleController: UIViewController, UITableViewDataSource, UITable
         ])
         
         let doneButton = UIButton(type: .system)
-       // doneButton.setTitle("Готово", for: .normal)
         doneButton.setTitle(NSLocalizedString("done", comment: ""), for: .normal)
         
         doneButton.setTitleColor(.white, for: .normal)

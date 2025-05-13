@@ -2,8 +2,6 @@
 //  TrackerTypesController.swift
 //  tracker
 //
-//  Created by Anastasiia on 26.02.2025.
-//
 import UIKit
 
 final class TrackerTypesController: UIViewController {
@@ -14,7 +12,6 @@ final class TrackerTypesController: UIViewController {
         
         let makeTracker = UILabel()
         makeTracker.textColor = .black
-       // makeTracker.text = "Создание трекера"
         makeTracker.text = NSLocalizedString("trecerTipes.title", comment: "")
         makeTracker.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         makeTracker.translatesAutoresizingMaskIntoConstraints = false
@@ -26,7 +23,6 @@ final class TrackerTypesController: UIViewController {
         ])
         
         let buttonHabit = UIButton(type: .custom)
-        //buttonHabit.setTitle("Привычка", for: .normal)
         buttonHabit.setTitle(NSLocalizedString("trecerTipes.habbitTitel", comment: ""), for: .normal)
         buttonHabit.setTitleColor(.white, for: .normal)
         buttonHabit.backgroundColor = .black
@@ -48,7 +44,6 @@ final class TrackerTypesController: UIViewController {
         ])
         
         let buttonIrregularEvent = UIButton(type: .system)
-        //buttonIrregularEvent.setTitle("Нерегулярное событие", for: .normal)
         buttonIrregularEvent.setTitle(NSLocalizedString("trecerTipes.irregularTitel", comment: ""), for: .normal)
         buttonIrregularEvent.setTitleColor(.white, for: .normal)
         buttonIrregularEvent.backgroundColor = .black

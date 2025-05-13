@@ -56,7 +56,6 @@ class OnboardingPageViewController: UIViewController {
         ])
         
         let button = UIButton(type: .system)
-       // button.setTitle("Вот это технологии!", for: .normal)
         button.setTitle(NSLocalizedString("onbording.botton", comment: ""), for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.backgroundColor = .black

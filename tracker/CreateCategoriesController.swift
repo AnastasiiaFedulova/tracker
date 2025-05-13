@@ -2,7 +2,6 @@ import UIKit
 
 final class CreateCategoriesController: UIViewController, UITextFieldDelegate {
     
-    
     let categoriesController = CategoriesController()
     let categoriesServise = CategoriesServise.shared
     let name = UITextField()
@@ -19,7 +18,6 @@ final class CreateCategoriesController: UIViewController, UITextFieldDelegate {
     private func setupUI() {
         let newCategoryLabel = UILabel()
         newCategoryLabel.textColor = .black
-        //newCategoryLabel.text = "Новая категория"
         newCategoryLabel.text = NSLocalizedString("newCategory.tytle", comment: "")
         
         newCategoryLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
@@ -31,7 +29,6 @@ final class CreateCategoriesController: UIViewController, UITextFieldDelegate {
             newCategoryLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 38)
         ])
         
-        //name.placeholder = "Введите название категории"
         name.placeholder = NSLocalizedString("newCategory.name", comment: "")
         
         name.borderStyle = .roundedRect
@@ -53,7 +50,6 @@ final class CreateCategoriesController: UIViewController, UITextFieldDelegate {
         ])
         
         let doneButton = UIButton(type: .system)
-        //doneButton.setTitle("Готово", for: .normal)
         doneButton.setTitle(NSLocalizedString("done", comment: ""), for: .normal)
         
         doneButton.setTitleColor(.white, for: .normal)

@@ -40,9 +40,8 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
     private func setupUI() {
         let categoriesLabel = UILabel()
         categoriesLabel.textColor = .black
-        //categoriesLabel.text = "Категория"
         categoriesLabel.text = NSLocalizedString("category.title", comment: "")
-
+        
         
         categoriesLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         categoriesLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -71,7 +70,6 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
         tableView.dataSource = self
         tableView.delegate = self
         tableView.separatorStyle = .none
-
         
         tableView.layer.cornerRadius = 16
         tableView.layer.maskedCorners = [
@@ -80,6 +78,7 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
             .layerMinXMaxYCorner,
             .layerMaxXMaxYCorner
         ]
+        
         tableView.layer.masksToBounds = true
         tableView.backgroundColor = .gr
         tableView.register(CategoryCell.self, forCellReuseIdentifier: "CategoryCell")
@@ -107,9 +106,7 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
             starImage.topAnchor.constraint(equalTo: categoriesLabel.bottomAnchor, constant: 246)
         ])
         
-        //labelStar.text = "Привычки и события можно \n объединить по смыслу"
         labelStar.text = NSLocalizedString("category.starTitle", comment: "")
-
         
         labelStar.numberOfLines = 0
         labelStar.font = UIFont.systemFont(ofSize: 12, weight: .medium)
@@ -125,7 +122,6 @@ final class CategoriesController: UIViewController, UITableViewDataSource, UITab
         ])
         
         let addCategoryButton = UIButton(type: .system)
-        //addCategoryButton.setTitle("Добавить категорию", for: .normal)
         addCategoryButton.setTitle(NSLocalizedString("category.addButton", comment: ""), for: .normal)
         
         addCategoryButton.setTitleColor(.white, for: .normal)
@@ -238,8 +234,8 @@ extension CategoriesController: UIContextMenuInteractionDelegate {
                 editCategoriesController.categoriesName = self.viewModel.categories[index]
                 editCategoriesController.modalPresentationStyle = .automatic
                 editCategoriesController.onCategoryUpdated = {
-                                self.viewModel.loadCategories()
-                            }
+                    self.viewModel.loadCategories()
+                }
                 self.present(editCategoriesController, animated: true, completion: nil)
             }
             
@@ -250,20 +246,18 @@ extension CategoriesController: UIContextMenuInteractionDelegate {
                     message: "Эта категория точно не нужна?",
                     preferredStyle: .actionSheet
                 )
-
+                
                 let confirmAction = UIAlertAction(title: "Удалить", style: .destructive) { _ in
                     self.viewModel.deleteCategory(at: index)
                 }
-
+                
                 let cancelAction = UIAlertAction(title: "Отменить", style: .cancel, handler: nil)
-
+                
                 alert.addAction(confirmAction)
                 alert.addAction(cancelAction)
-
-                // Обязательно: показываем алерт из текущего контроллера
+                
                 self.present(alert, animated: true, completion: nil)
             }
-
             
             return UIMenu(title: "", children: [editAction, deleteAction])
         }

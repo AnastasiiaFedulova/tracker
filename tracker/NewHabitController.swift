@@ -3,7 +3,6 @@
 //
 // Created by Anastasiia on 26.02.2025.
 //
-
 import UIKit
 
 final class NewHabitController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, ScheduleControllerDelegate {
@@ -104,7 +103,6 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
         
         let NewIrregularEventLabel = UILabel()
         NewIrregularEventLabel.textColor = .black
-        //NewIrregularEventLabel.text = "Новая привычка"
         NewIrregularEventLabel.text = NSLocalizedString("newHabbit.title", comment: "")
         
         NewIrregularEventLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
@@ -119,7 +117,6 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
             NewIrregularEventLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 38)
         ])
         
-        //name.placeholder = "Введите название трекера"
         name.placeholder = NSLocalizedString("newHabbbit.name", comment: "")
         
         name.textColor = .black
@@ -143,7 +140,6 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
         ])
         
         let emojiLabel = UILabel()
-        //emojiLabel.text = "Emoji"
         emojiLabel.text = NSLocalizedString("emoji", comment: "")
         
         emojiLabel.textColor = .black
@@ -186,7 +182,6 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
         scheduleLabelTopConstraint = scheduleLabel.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 101)
         scheduleLabelTopConstraintSmall = scheduleLabel.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 90)
         
-       // categories.text = "Категория"
         categories.text = NSLocalizedString("newHabbit.category", comment: "")
         
         categories.textColor = .forText
@@ -209,7 +204,6 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
             chuseCategoriesNames.topAnchor.constraint(equalTo: categories.bottomAnchor, constant: 2)
         ])
         
-        //scheduleLabel.text = "Расписание"
         scheduleLabel.text = NSLocalizedString("newHabbit.schedule", comment: "")
         
         scheduleLabel.textColor = .forText
@@ -275,7 +269,6 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
         ])
         
         let color = UILabel()
-        //color.text = "Цвет"
         color.text = NSLocalizedString("color", comment: "")
         
         color.textColor = .black
@@ -291,7 +284,6 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
         ])
         
         let cancellButton = UIButton(type: .system)
-        //cancellButton.setTitle("Отменить", for: .normal)
         cancellButton.setTitle(NSLocalizedString("cancell", comment: ""), for: .normal)
         
         cancellButton.setTitleColor(.button, for: .normal)
@@ -314,14 +306,12 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
             cancellButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
         ])
         
-        //createButton.setTitle("Создать", for: .normal)
         createButton.setTitle(NSLocalizedString("create", comment: ""), for: .normal)
         
         createButton.setTitleColor(.white, for: .normal)
         createButton.backgroundColor = .greyButton
         createButton.setContentCompressionResistancePriority(.required, for: .vertical)
         createButton.isEnabled = false
-        
         
         createButton.layer.cornerRadius = 16
         createButton.translatesAutoresizingMaskIntoConstraints = false
@@ -376,7 +366,7 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        textField.resignFirstResponder() // Скрываем клавиатуру
+        textField.resignFirstResponder()
         return true
     }
     func updateCreateButtonState() {
@@ -406,7 +396,6 @@ final class NewHabitController: UIViewController, UICollectionViewDataSource, UI
     func numberOfSections(in tableView: UITableView) -> Int {
         return 2
     }
-    
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
@@ -496,7 +485,6 @@ extension NewHabitController {
             outerView.backgroundColor = color
             cell.contentView.addSubview(outerView)
             
-            // Белая полоска
             let middleView = UIView()
             middleView.frame = CGRect(x: 0, y: 0, width: 46, height: 46)
             middleView.layer.cornerRadius = 8
@@ -505,7 +493,6 @@ extension NewHabitController {
             middleView.translatesAutoresizingMaskIntoConstraints = false
             cell.contentView.addSubview(middleView)
             
-            // Внутренний цветной квадрат
             let innerView = UIView()
             innerView.frame = CGRect(x: 0, y: 0, width: 40, height: 40)
             innerView.layer.cornerRadius = 8

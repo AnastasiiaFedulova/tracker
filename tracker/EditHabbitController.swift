@@ -4,7 +4,6 @@
 //
 //  Created by Anastasiia on 15.04.2025.
 //
-
 import Foundation
 import UIKit
 
@@ -103,20 +102,19 @@ final class EditHabbitController: UIViewController, UICollectionViewDataSource, 
         if let emoji = selectedEmoji, let index = emogies.firstIndex(of: emoji) {
             selectedEmojiIndex = IndexPath(item: index, section: 0)
         }
-
+        
         if let color = selectedColor {
             if let index = colors.firstIndex(where: { $0.toHex() == color.toHex() }) {
                 selectedColorIndex = IndexPath(item: index, section: 0)
             }
         }
-    
+        
         if let tracker = tracker {
             name.text = habbitText
             dayCount.text = dayText
             chuseScheduleLabel.text = sceduleText
             chuseCategoriesNames.text = categoyText
         }
-    
         
         let scrollView = UIScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
@@ -134,7 +132,6 @@ final class EditHabbitController: UIViewController, UICollectionViewDataSource, 
         let editHabbitLabel = UILabel()
         editHabbitLabel.textColor = .black
         editHabbitLabel.text = "Редактирование привычки"
-        //NewIrregularEventLabel.text = NSLocalizedString("newHabbit.title", comment: "")
         
         editHabbitLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         editHabbitLabel.textAlignment = .center
@@ -148,10 +145,8 @@ final class EditHabbitController: UIViewController, UICollectionViewDataSource, 
             editHabbitLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 38)
         ])
         
-//        let dayCount = UILabel()
         dayCount.textColor = .black
         dayCount.text = dayText
-        //NewIrregularEventLabel.text = NSLocalizedString("newHabbit.title", comment: "")
         
         dayCount.font = UIFont.systemFont(ofSize: 32, weight: .bold)
         dayCount.textAlignment = .center
@@ -187,7 +182,6 @@ final class EditHabbitController: UIViewController, UICollectionViewDataSource, 
         ])
         
         let emojiLabel = UILabel()
-        //emojiLabel.text = "Emoji"
         emojiLabel.text = NSLocalizedString("emoji", comment: "")
         
         emojiLabel.textColor = .black
@@ -215,7 +209,6 @@ final class EditHabbitController: UIViewController, UICollectionViewDataSource, 
         tableView.isScrollEnabled = false
         contentView.addSubview(tableView)
         
-        
         NSLayoutConstraint.activate([
             tableView.widthAnchor.constraint(equalToConstant: 343),
             tableView.heightAnchor.constraint(equalToConstant: CGFloat(tableData.flatMap { $0 }.count) * 75),
@@ -224,13 +217,11 @@ final class EditHabbitController: UIViewController, UICollectionViewDataSource, 
             tableView.topAnchor.constraint(equalTo: name.bottomAnchor, constant: 20)
         ])
         
-        
         categoriesTopConstraint = categories.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 27)
         categoriesTopConstraintSmall = categories.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 15)
         scheduleLabelTopConstraint = scheduleLabel.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 101)
         scheduleLabelTopConstraintSmall = scheduleLabel.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 90)
         
-       // categories.text = "Категория"
         categories.text = NSLocalizedString("newHabbit.category", comment: "")
         
         categories.textColor = .forText
@@ -253,7 +244,6 @@ final class EditHabbitController: UIViewController, UICollectionViewDataSource, 
             chuseCategoriesNames.topAnchor.constraint(equalTo: categories.bottomAnchor, constant: 2)
         ])
         
-        //scheduleLabel.text = "Расписание"
         scheduleLabel.text = NSLocalizedString("newHabbit.schedule", comment: "")
         
         scheduleLabel.textColor = .forText
@@ -319,7 +309,6 @@ final class EditHabbitController: UIViewController, UICollectionViewDataSource, 
         ])
         
         let color = UILabel()
-        //color.text = "Цвет"
         color.text = NSLocalizedString("color", comment: "")
         
         color.textColor = .black
@@ -335,7 +324,6 @@ final class EditHabbitController: UIViewController, UICollectionViewDataSource, 
         ])
         
         let cancellButton = UIButton(type: .system)
-        //cancellButton.setTitle("Отменить", for: .normal)
         cancellButton.setTitle(NSLocalizedString("cancell", comment: ""), for: .normal)
         
         cancellButton.setTitleColor(.button, for: .normal)
@@ -358,14 +346,12 @@ final class EditHabbitController: UIViewController, UICollectionViewDataSource, 
             cancellButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
         ])
         
-        //createButton.setTitle("Создать", for: .normal)
         createButton.setTitle(NSLocalizedString("create", comment: ""), for: .normal)
         
         createButton.setTitleColor(.white, for: .normal)
         createButton.backgroundColor = .greyButton
         createButton.setContentCompressionResistancePriority(.required, for: .vertical)
         createButton.isEnabled = false
-        
         
         createButton.layer.cornerRadius = 16
         createButton.translatesAutoresizingMaskIntoConstraints = false
@@ -450,7 +436,6 @@ final class EditHabbitController: UIViewController, UICollectionViewDataSource, 
     func numberOfSections(in tableView: UITableView) -> Int {
         return 2
     }
-    
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
@@ -540,7 +525,6 @@ extension EditHabbitController {
             outerView.backgroundColor = color
             cell.contentView.addSubview(outerView)
             
-            // Белая полоска
             let middleView = UIView()
             middleView.frame = CGRect(x: 0, y: 0, width: 46, height: 46)
             middleView.layer.cornerRadius = 8
@@ -549,7 +533,6 @@ extension EditHabbitController {
             middleView.translatesAutoresizingMaskIntoConstraints = false
             cell.contentView.addSubview(middleView)
             
-            // Внутренний цветной квадрат
             let innerView = UIView()
             innerView.frame = CGRect(x: 0, y: 0, width: 40, height: 40)
             innerView.layer.cornerRadius = 8
@@ -642,75 +625,6 @@ extension EditHabbitController {
         dismiss(animated: true)
     }
     
-    //    @objc func didTapCreateButton() {
-    //        print("Кнопка 'Создать' нажата")
-    //
-    //        let weekdayArray = sceduleService.selectedWeekdays.compactMap { Weekday(rawValue: $0.rawValue) }
-    //
-    //        if weekdayArray.isEmpty {
-    //            print("Ошибка: Не выбраны дни недели для календаря")
-    //            return
-    //        }
-    //
-    //        guard let calendarData = try? JSONEncoder().encode(weekdayArray) else {
-    //            print("Ошибка при кодировании календаря в Data")
-    //            return
-    //        }
-    //
-    //        let context = PersistenceController.shared.context
-    //
-    //        let isCompleted = false
-    //        var category: TrackerCategoryCoreData? = nil
-    //
-    //        if let categoryName = chuseCategoriesNames.text, !categoryName.isEmpty {
-    //            category = CoreDataService.shared.fetchCategory(byName: categoryName, context: context)
-    //
-    //            if category == nil {
-    //                category = CoreDataService.shared.createCategory(name: categoryName, context: context)
-    //            }
-    //        }
-    //
-    //        let newTrackerCoreData = TrackerCoreData(context: context)
-    //        newTrackerCoreData.id = UUID()
-    //        newTrackerCoreData.name = name.text ?? ""
-    //        newTrackerCoreData.color = selectedColors
-    //        newTrackerCoreData.emoji = selectedEmoji
-    //        newTrackerCoreData.calendar = calendarData as NSData
-    //        newTrackerCoreData.isCompleted = isCompleted
-    //
-    //        if let category = category {
-    //            newTrackerCoreData.category = category
-    //        }
-    //
-    //        do {
-    //            try context.save()
-    //            print("Трекер успешно сохранен в Core Data")
-    //        } catch {
-    //            print("Ошибка сохранения в Core Data: \(error)")
-    //            return
-    //        }
-    //
-    //        var targetVC = presentingViewController
-    //        while targetVC != nil {
-    //            if let tabBarController = targetVC as? UITabBarController {
-    //                for viewController in tabBarController.viewControllers ?? [] {
-    //                    if let viewController = viewController as? ViewController {
-    //
-    //                        viewController.addTracker(forCategory: chuseCategoriesNames.text ?? "", trackerCoreData: newTrackerCoreData)
-    //                        viewController.dismiss(animated: true, completion: {
-    //                            self.dismiss(animated: true, completion: nil)
-    //                        })
-    //                        return
-    //                    }
-    //                }
-    //            }
-    //            targetVC = targetVC?.presentingViewController
-    //        }
-    //
-    //        print("Не удалось найти нужный ViewController")
-    //        dismiss(animated: true)
-    //    }
-    //
     @objc func didTapCreateButton() {
         print("Кнопка 'Создать' нажата")
         
@@ -718,10 +632,9 @@ extension EditHabbitController {
             print("Ошибка: trackerToEdit не задан, редактирование невозможно")
             return
         }
-
+        
         let context = PersistenceController.shared.context
-
-        // 🗓 Дни недели
+        
         let selectedWeekdays = sceduleService.selectedWeekdays
         let weekdayArray: [Weekday]
         
@@ -732,18 +645,17 @@ extension EditHabbitController {
         } else {
             weekdayArray = selectedWeekdays
         }
-
+        
         guard !weekdayArray.isEmpty else {
             print("Ошибка: не выбраны дни недели и нет сохранённых")
             return
         }
-
+        
         guard let calendarData = try? JSONEncoder().encode(weekdayArray) else {
             print("Ошибка при кодировании календаря")
             return
         }
-
-        // 📂 Категория
+        
         var category: TrackerCategoryCoreData?
         if let categoryName = chuseCategoriesNames.text, !categoryName.isEmpty {
             category = CoreDataService.shared.fetchCategory(byName: categoryName, context: context)
@@ -751,14 +663,13 @@ extension EditHabbitController {
                 category = CoreDataService.shared.createCategory(name: categoryName, context: context)
             }
         }
-
-        // ✏️ Обновление трекера
+        
         trackerToEdit.name = name.text ?? trackerToEdit.name
         trackerToEdit.color = selectedColors
         trackerToEdit.emoji = selectedEmoji
         trackerToEdit.calendar = calendarData as NSData
         trackerToEdit.category = category
-
+        
         do {
             try context.save()
             print("Трекер обновлён и сохранён")
@@ -766,8 +677,7 @@ extension EditHabbitController {
             print("Ошибка при сохранении: \(error)")
             return
         }
-
-        // 🔄 Обновление главного экрана
+        
         if let tabBarController = presentingViewController as? UITabBarController {
             for case let navVC as UINavigationController in tabBarController.viewControllers ?? [] {
                 for vc in navVC.viewControllers {
@@ -778,8 +688,7 @@ extension EditHabbitController {
                 }
             }
         }
-
+        
         dismiss(animated: true)
     }
-
 }

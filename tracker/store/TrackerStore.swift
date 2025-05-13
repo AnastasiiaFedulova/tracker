@@ -1,3 +1,4 @@
+import CoreData
 
 class CoreDataService {
     static let shared = CoreDataService()
@@ -32,7 +33,7 @@ class CoreDataService {
     }
     
 }
-import CoreData
+
 
 final class TrackerStore: NSObject, NSFetchedResultsControllerDelegate {
     static let shared = TrackerStore(context: PersistenceController.shared.context)
@@ -134,12 +135,11 @@ final class TrackerStore: NSObject, NSFetchedResultsControllerDelegate {
             try context.execute(NSBatchDeleteRequest(fetchRequest: categoryRequest))
             try context.save()
             context.reset()
-            print("✅ Очистка выполнена")
 
-            reloadFetchedResults() // Обновляем FRC
-            onUpdate?() // Обновляем UI
+            reloadFetchedResults()
+            onUpdate?()
         } catch {
-            print("❌ Ошибка очистки: \(error)")
+            print("Ошибка")
         }
     }
 
@@ -148,89 +148,9 @@ final class TrackerStore: NSObject, NSFetchedResultsControllerDelegate {
         onUpdate?()
     }
 
-
-    
-//    func save(categories: [TrackerCategory]) {
-//        for category in categories {
-//            // Используем существующую категорию, если есть
-//            let categoryCoreData: TrackerCategoryCoreData
-//            if let existingCategory = CoreDataService.shared.fetchCategory(byName: category.title, context: context) {
-//                categoryCoreData = existingCategory
-//            } else {
-//                categoryCoreData = CoreDataService.shared.createCategory(name: category.title, context: context)
-//            }
-//            
-//            for tracker in category.trakers {
-//                // Проверяем, существует ли трекер с таким ID
-//                if let existingTracker = try? fetchTrackerCoreData(by: tracker.id) {
-//                    // Проверяем, не прикреплён ли он уже к этой категории
-//                    if existingTracker.category == categoryCoreData {
-//                        continue // уже сохранён и прикреплён — пропускаем
-//                    } else {
-//                        existingTracker.category = categoryCoreData
-//                        continue // просто переподключаем — не создаём
-//                    }
-//                }
-//                
-//                // Если трекер не существует — создаём
-//                save(tracker: tracker, category: categoryCoreData)
-//            }
-//        }
-//        
-//        saveContext()
-//    }
-    
-    func save(categories: [TrackerCategory]) {
-        for category in categories {
-            let existingCategory = TrackerCategoryStore.shared.fetchCategory(byTitle: category.title)
-            let categoryCoreData: TrackerCategoryCoreData
-            
-            if let existing = existingCategory {
-                categoryCoreData = existing
-            } else {
-                categoryCoreData = TrackerCategoryCoreData(context: context)
-                categoryCoreData.title = category.title
-            }
-
-            for tracker in category.trakers {
-                let trackerCoreData = TrackerCoreData(context: context)
-                trackerCoreData.id = tracker.id
-                trackerCoreData.name = tracker.name
-                trackerCoreData.color = tracker.color.toHex()
-                trackerCoreData.emoji = tracker.emoji
-                trackerCoreData.calendar = tracker.calendar.map { $0.rawValue } as NSObject
-                trackerCoreData.date = tracker.date
-                trackerCoreData.category = categoryCoreData
-            }
-        }
-
-        do {
-            try context.save()
-        } catch {
-            print("Ошибка при сохранении: \(error)")
-        }
-    }
-    func saveFixedTrackersForTest() {
-        // Создаем одну категорию и один трекер для теста
-        let category = TrackerCategory(title: "Test Category", trakers: [
-            Tracker(id: UUID(), name: "Купи собаку", color: .blue, emoji: "🐶", calendar: [], date: nil)
-        ])
-        
-        // Очистить все старые данные перед сохранением
-        clearAll()
-        
-        // Сохраняем новую категорию с трекером
-        save(categories: [category])
-        
-        // Для проверки добавления
-        print("Создан новый трекер: \(category.trakers.first?.name ?? "Без названия")")
-    }
-
-
-
     private func save(tracker: Tracker, category: TrackerCategoryCoreData) {
         if let existingTracker = try? fetchTrackerCoreData(by: tracker.id) {
-            // Обновляем
+
             existingTracker.name = tracker.name
             existingTracker.color = tracker.color.toHex()
             existingTracker.emoji = tracker.emoji
@@ -238,7 +158,7 @@ final class TrackerStore: NSObject, NSFetchedResultsControllerDelegate {
             existingTracker.isCompleted = false
             existingTracker.category = category
         } else {
-            // Создаем
+
             let trackerCoreData = TrackerCoreData(context: context)
             trackerCoreData.id = tracker.id
             trackerCoreData.name = tracker.name
