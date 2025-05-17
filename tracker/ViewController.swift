@@ -59,6 +59,7 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
         let button = UIButton(type: .system)
         button.setTitle("Отменить", for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .regular)
+        button.tintColor = .filterBlue
         button.isHidden = true
         return button
     }()
@@ -68,7 +69,7 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
         imageView.image = UIImage(named: "notFind")
         imageView.contentMode = .scaleAspectFit
         imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.isHidden = true // по умолчанию скрыта
+        imageView.isHidden = true
         return imageView
     }()
     
@@ -76,7 +77,7 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
         let label = UILabel()
         label.text = "Ничего не найдено"
         label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
-        label.textColor = .gray
+        label.textColor = .forText
         label.translatesAutoresizingMaskIntoConstraints = false
         label.isHidden = true
         return label
@@ -117,6 +118,8 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
     var searchBarTrailingConstraint: NSLayoutConstraint!
     private var currentFilter: TrackerFilter = .all
     private let colors = Colors()
+    
+    private let pinnedKey = "pinnedTrackers"
     
     private var currentWeekday: Weekday {
         let weekdayNumber = Calendar.current.component(.weekday, from: currentData.date)
@@ -162,18 +165,27 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
     }
     
     override func viewDidLoad() {
-        trackerStore = TrackerStore(context: PersistenceController.shared.context)
+        super.viewDidLoad()
         
+        updateCategoriesFromCoreData()
+        loadPinnedTrackers()
+        cleanupPinTrackers()
+        updateVisibleCategories()
+        
+        trackerStore = TrackerStore(context: PersistenceController.shared.context)
         
         trackerStore.onUpdate = { [weak self] in
             DispatchQueue.main.async {
-                self?.updateCategoriesFromCoreData()
-                self?.reloadCategories()
+                guard let self else { return }
+                self.updateCategoriesFromCoreData()
+                self.restoreRealCategoryTracker()
+                self.updateVisibleCategories()
+                self.savePinnedTrackers()
             }
         }
         
         let context = PersistenceController.shared.context
-        super.viewDidLoad()
+
         loadTrackers()
         
         self.trackers = trackerStore.getTrackers()
@@ -181,7 +193,6 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
         collectionView.reloadData()
         
         view.backgroundColor = colors.viewBackgroundColor
-        
         
         loadCompletedTrackers()
         setupCollectionView()
@@ -295,6 +306,7 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
         currentData.translatesAutoresizingMaskIntoConstraints = false
         currentData.datePickerMode = .date
         currentData.preferredDatePickerStyle = .compact
+        currentData.locale = Locale(identifier: "ru_RU")
         
         let whiteBackground = UIView()
         whiteBackground.translatesAutoresizingMaskIntoConstraints = false
@@ -312,14 +324,13 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
         }
         
         NSLayoutConstraint.activate([
-            whiteBackground.widthAnchor.constraint(equalToConstant: 135),
-            whiteBackground.heightAnchor.constraint(equalToConstant: 34),
-            whiteBackground.trailingAnchor.constraint(equalTo: currentData.trailingAnchor),
-            whiteBackground.topAnchor.constraint(equalTo: currentData.topAnchor)
+            whiteBackground.widthAnchor.constraint(equalTo: currentData.widthAnchor),
+            whiteBackground.heightAnchor.constraint(equalTo: currentData.heightAnchor),
+            whiteBackground.centerXAnchor.constraint(equalTo: currentData.centerXAnchor),
+            whiteBackground.centerYAnchor.constraint(equalTo: currentData.centerYAnchor)
         ])
         
         NSLayoutConstraint.activate([
-            currentData.leadingAnchor.constraint(equalTo: buttonPlus.leadingAnchor, constant: 245),
             currentData.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             currentData.centerYAnchor.constraint(equalTo: buttonPlus.centerYAnchor)
         ])
@@ -336,7 +347,6 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
             notFindLabel.topAnchor.constraint(equalTo: notFindTrecker.bottomAnchor, constant: 8),
             notFindLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
-        
         
         view.addSubview(collectionView)
         
@@ -359,10 +369,11 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
     }
     
     @objc func dateChanged() {
-        reloadCategories()
-        applyFilter()
+        loadPinnedTrackers()
+        restoreRealCategoryTracker()
+        updateVisibleCategories()
     }
-
+    
     @objc func stopFind() {
         cancelButton.isHidden = true
         searchBarTrailingConstraint.constant = -16
@@ -374,47 +385,9 @@ final class ViewController: UIViewController, UICollectionViewDataSource, UIColl
     }
     
     private func reloadCategories() {
-        let calendar = Calendar.current
-        let filterWeekday = calendar.component(.weekday, from: currentData.date) - 1
-        let currentDate = currentData.date
-        print("Текущая дата для фильтрации: \(currentDate)")
-        
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        let currentDateString = dateFormatter.string(from: currentData.date)
-        
-        visibleCategories = categories.map { category in
-            TrackerCategory(
-                title: category.title,
-                trakers: category.trakers.filter { tracker in
-                    var matchesDate = false
-                    
-                    if let trackerDate = tracker.date {
-                        matchesDate = trackerDate == currentDateString
-                    } else if !tracker.calendar.isEmpty {
-                        let isDayOfWeek = tracker.calendar.contains {
-                            Weekday.allCases.firstIndex(of: $0) == filterWeekday
-                        }
-                        matchesDate = isDayOfWeek
-                    }
-                    
-                    let matchesSearchText: Bool
-                    if searchText.isEmpty {
-                        matchesSearchText = true
-                    } else {
-                        matchesSearchText = tracker.name.lowercased().contains(searchText.lowercased())
-                    }
-                    
-                    return matchesDate && matchesSearchText
-                }
-            )
-        }
-        
-        visibleCategories = visibleCategories.filter { !$0.trakers.isEmpty }
-        updateEmptyState()
-        collectionView.reloadData()
-        
+        updateVisibleCategories()
     }
+    
     
     internal func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
@@ -522,48 +495,100 @@ extension ViewController {
     func loadTrackers() {
         self.trackers = trackerStore.getTrackers()
         updateCategoriesFromCoreData()
+        restoreRealCategoryTracker()
+        updateVisibleCategories()
+        savePinnedTrackers()
         collectionView.reloadData()
     }
     
-    private func pinCategory() -> TrackerCategory {
-        if let existing = categories.first(where: { $0.title == "Закреплённые" }) {
-            return existing
-        } else {
-            let newPinCategory = TrackerCategory(title: "Закреплённые", trakers: [])
-            categories.insert(newPinCategory, at: 0)
-            return newPinCategory
+    private func savePinnedTrackers() {
+        let ids = pinTrackers.map { $0.uuidString }
+        UserDefaults.standard.set(ids, forKey: pinnedKey)
+    }
+    
+    private func loadPinnedTrackers() {
+        if let saved = UserDefaults.standard.array(forKey: pinnedKey) as? [String] {
+            pinTrackers = Set(saved.compactMap { UUID(uuidString: $0) })
         }
     }
+    
     private func updateVisibleCategories() {
-        var updatedCategories: [TrackerCategory] = []
+        
+        let calendar = Calendar.current
+        let filterWeekday = calendar.component(.weekday, from: currentData.date) - 1
+        let currentDate = currentData.date
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let currentDateString = dateFormatter.string(from: currentDate)
         
         var pinnedTrackers: [Tracker] = []
         var otherCategories: [TrackerCategory] = []
         
         for category in categories {
-            let pinned = category.trakers.filter { pinTrackers.contains($0.id) }
-            let unpinned = category.trakers.filter { !pinTrackers.contains($0.id) }
+            var unpinnedTrackers: [Tracker] = []
             
-            if !unpinned.isEmpty {
-                otherCategories.append(TrackerCategory(title: category.title, trakers: unpinned))
+            for tracker in category.trakers {
+                
+                var matchesDate = false
+                if let trackerDate = tracker.date {
+                    matchesDate = trackerDate == currentDateString
+                } else if !tracker.calendar.isEmpty {
+                    matchesDate = tracker.calendar.contains {
+                        Weekday.allCases.firstIndex(of: $0) == filterWeekday
+                    }
+                }
+                
+                let matchesSearch = searchText.isEmpty || tracker.name.lowercased().contains(searchText.lowercased())
+                
+                var matchesFilter = true
+                switch currentFilter {
+                case .all:
+                    matchesFilter = true
+                    
+                case .today:
+                    matchesFilter = Calendar.current.isDate(currentDate, inSameDayAs: Date())
+                    
+                case .completed:
+                    matchesFilter = completedTrackers[tracker.id]?.contains(where: {
+                        guard let date = parseDate(from: $0) else { return false }
+                        return Calendar.current.isDate(date, inSameDayAs: currentDate)
+                    }) ?? false
+                    
+                case .notCompleted:
+                    matchesFilter = !(completedTrackers[tracker.id]?.contains(where: {
+                        guard let date = parseDate(from: $0) else { return false }
+                        return Calendar.current.isDate(date, inSameDayAs: currentDate)
+                    }) ?? false)
+                }
+                
+                if !(matchesDate && matchesSearch && matchesFilter) {
+                    continue
+                }
+                
+                if pinTrackers.contains(tracker.id) {
+                    pinnedTrackers.append(tracker)
+                } else {
+                    unpinnedTrackers.append(tracker)
+                }
             }
             
-            pinnedTrackers.append(contentsOf: pinned)
+            if !unpinnedTrackers.isEmpty {
+                otherCategories.append(TrackerCategory(title: category.title, trakers:unpinnedTrackers))
+            }
         }
         
+        var updatedCategories: [TrackerCategory] = []
+        
         if !pinnedTrackers.isEmpty {
-            let pinnedCategory = TrackerCategory(title: "Закреплённые", trakers: pinnedTrackers)
-            updatedCategories.append(pinnedCategory)
+            updatedCategories.append(TrackerCategory(title: "Закреплённые", trakers: pinnedTrackers))
         }
         
         updatedCategories.append(contentsOf: otherCategories)
         visibleCategories = updatedCategories
+        
         collectionView.reloadData()
-        
-        let nothingFound = visibleCategories.allSatisfy { $0.trakers.isEmpty }
-        
-        notFindTrecker.isHidden = !nothingFound
-        collectionView.isHidden = nothingFound
+        updateEmptyState()
     }
 }
 
@@ -584,9 +609,12 @@ extension ViewController {
     }
     
     func addTracker(forCategory categoryTitle: String, trackerCoreData: TrackerCoreData) {
-        
         let context = PersistenceController.shared.context
         let categoryStore = TrackerCategoryStore(context: context)
+        
+        if trackerCoreData.id == nil {
+            trackerCoreData.id = UUID()
+        }
         
         let category: TrackerCategoryCoreData
         if let existingCategory = categoryStore.fetchCategory(byTitle: categoryTitle) {
@@ -601,14 +629,54 @@ extension ViewController {
         
         do {
             try context.save()
-            print("Категория и трекер обновлены в Core Data")
+            
             updateCategoriesFromCoreData()
-            collectionView.reloadData()
+            cleanupPinTrackers()
+            
+            updateCategoriesFromCoreData()
+            restoreRealCategoryTracker()
+            cleanupPinTrackers()
+            updateVisibleCategories()
+            savePinnedTrackers()
+            
         } catch {
             print("Ошибка сохранения в Core Data: \(error)")
         }
+    }
+    
+    func cleanupPinTrackers() {
+        let allTrackerIDs = categories.flatMap { $0.trakers }.map { $0.id }
         
-        updateCategoriesFromCoreData()
+        pinTrackers = pinTrackers.filter { allTrackerIDs.contains($0) }
+    }
+    
+    private func restoreRealCategoryTracker() {
+        
+        var updatedRealCategoryTracker: [UUID: String] = [:]
+        var validPinTrackers: Set<UUID> = []
+        
+        for category in categories {
+            for tracker in category.trakers {
+                let trackerID = tracker.id
+                
+                if pinTrackers.contains(trackerID) {
+                    validPinTrackers.insert(trackerID)
+                    
+                    if let originalCategory = realCategoryTracker[trackerID] {
+                        updatedRealCategoryTracker[trackerID] = originalCategory
+                    } else {
+                        updatedRealCategoryTracker[trackerID] = category.title
+                    }
+                }
+            }
+        }
+        
+        pinTrackers = validPinTrackers
+        realCategoryTracker = updatedRealCategoryTracker
+        
+        for (id, category) in realCategoryTracker {
+            print("- \(id) → \(category)")
+        }
     }
     
     func updateCategoriesFromCoreData() {
@@ -617,18 +685,15 @@ extension ViewController {
             let fetchedCategories = TrackerCategoryStore.shared.fetchCategories()
             
             categories = fetchedCategories.map { category in
-                
                 let trackers: [Tracker] = (category.trackers as? Set<TrackerCoreData>)?.compactMap { coreDataTracker in
                     guard let id = coreDataTracker.id else {
                         fatalError("Ошибка")
                     }
-                    
                     let name = coreDataTracker.name ?? ""
                     let emoji = coreDataTracker.emoji ?? ""
                     let color = coreDataTracker.color ?? ""
                     let calendarData = coreDataTracker.calendar as? Data
                     let calendar = decodeCalendar(from: calendarData)
-                    
                     return Tracker(
                         id: id,
                         name: name,
@@ -638,12 +703,15 @@ extension ViewController {
                         date: coreDataTracker.date
                     )
                 } ?? []
-                
                 let title = category.title ?? ""
                 return TrackerCategory(title: title, trakers: trackers)
             }
         } catch {
             print("Ошибка загрузки категорий из Core Data: \(error)")
+        }
+        
+        for category in categories {
+            print("- \(category.title): трекеры \(category.trakers.map { $0.id })")
         }
     }
     
@@ -668,7 +736,7 @@ extension ViewController {
         
         return UIContextMenuConfiguration(identifier: indexPath as NSCopying, previewProvider: nil) { _ in
             
-            guard let cell = collectionView.cellForItem(at: indexPath) as? TrackerCell else {
+            guard collectionView.cellForItem(at: indexPath) is TrackerCell else {
                 return UIMenu(title: "", children: [])
             }
             
@@ -677,13 +745,17 @@ extension ViewController {
             let saveAction = UIAction(title: pinText) { _ in
                 if pinned {
                     self.pinTrackers.remove(tracker.id)
+                    self.realCategoryTracker.removeValue(forKey: tracker.id)
                 } else {
                     self.pinTrackers.insert(tracker.id)
                     let categoryName = self.visibleCategories[indexPath.section].title
                     self.realCategoryTracker[tracker.id] = categoryName
                 }
+                self.savePinnedTrackers()
+                self.restoreRealCategoryTracker()
                 self.updateVisibleCategories()
             }
+            
             
             let editAction = UIAction(title: "Редактировать") { _ in
                 AnalyticsService.shared.sendEvent(event: "click", screen: "Main", item: "edit")
@@ -750,9 +822,14 @@ extension ViewController {
                         }
                     }
                     
+                    self.pinTrackers.remove(trackerToDelete.id)
+                    self.realCategoryTracker.removeValue(forKey: trackerToDelete.id)
+                    self.savePinnedTrackers()
+                    
                     self.categories = updatedCategories
+                    self.restoreRealCategoryTracker()
                     self.updateVisibleCategories()
-                    self.collectionView.reloadData()
+                    self.savePinnedTrackers()
                 }
                 
                 let cancelAction = UIAlertAction(title: "Отменить", style: .cancel, handler: nil)
@@ -780,48 +857,71 @@ extension ViewController {
         
         return UITargetedPreview(view: targetView, parameters: parameters)
     }
+    
     private func applyFilter() {
-        switch currentFilter {
-        case .all:
-            visibleCategories = categories
+        let calendar = Calendar.current
+        let currentDate = currentData.date
+        let weekday = calendar.component(.weekday, from: currentDate)
+        
+        var pinnedTrackers: [Tracker] = []
+        var otherCategories: [TrackerCategory] = []
+        
+        for category in categories {
+            var unpinned: [Tracker] = []
             
-        case .today:
-            currentData.date = Date()
-            visibleCategories = categories
-            
-        case .completed:
-            visibleCategories = categories.map { category in
-                let filteredTrackers = category.trakers.filter {
-                    guard let dates = completedTrackers[$0.id] else { return false }
-                    return dates.contains(where: {
-                        guard let date = parseDate(from: $0) else { return false }
-                        return Calendar.current.isDate(date, inSameDayAs: currentData.date)
-                    })
+            for tracker in category.trakers {
+                
+                let passesFilter: Bool = {
+                    switch currentFilter {
+                    case .all:
+                        return true
+                        
+                    case .today:
+                        return tracker.calendar.contains {
+                            Weekday.allCases.firstIndex(of: $0) == weekday - 1
+                        }
+                        
+                    case .completed:
+                        return completedTrackers[tracker.id]?.contains(where: {
+                            guard let date = parseDate(from: $0) else { return false }
+                            return calendar.isDate(date, inSameDayAs: currentDate)
+                        }) ?? false
+                        
+                    case .notCompleted:
+                        return !(completedTrackers[tracker.id]?.contains(where: {
+                            guard let date = parseDate(from: $0) else { return false }
+                            return calendar.isDate(date, inSameDayAs: currentDate)
+                        }) ?? false)
+                    }
+                }()
+                
+                if !passesFilter {
+                    continue
                 }
-                return TrackerCategory(title: category.title, trakers: filteredTrackers)
-            }.filter { !$0.trakers.isEmpty }
-            
-        case .notCompleted:
-            visibleCategories = categories.map { category in
-                let filteredTrackers = category.trakers.filter {
-                    guard let dates = completedTrackers[$0.id] else { return true }
-                    return !dates.contains(where: {
-                        guard let date = parseDate(from: $0) else { return false }
-                        return Calendar.current.isDate(date, inSameDayAs: currentData.date)
-                    })
+                
+                if pinTrackers.contains(tracker.id) {
+                    pinnedTrackers.append(tracker)
+                } else {
+                    unpinned.append(tracker)
                 }
-                return TrackerCategory(title: category.title, trakers: filteredTrackers)
-            }.filter { !$0.trakers.isEmpty }
+            }
+            
+            if !unpinned.isEmpty {
+                otherCategories.append(TrackerCategory(title: category.title, trakers: unpinned))
+            }
         }
         
-        let isEmpty = visibleCategories.isEmpty
-        notFindLabel.isHidden = !isEmpty
-        notFindTrecker.isHidden = !isEmpty
+        var result: [TrackerCategory] = []
         
-        view.bringSubviewToFront(notFindLabel)
-        view.bringSubviewToFront(notFindTrecker)
+        if !pinnedTrackers.isEmpty {
+            result.append(TrackerCategory(title: "Закреплённые", trakers: pinnedTrackers))
+        }
         
+        result.append(contentsOf: otherCategories)
+        
+        visibleCategories = result
         collectionView.reloadData()
+        updateEmptyState()
     }
     
     func parseDate(from dateString: String) -> Date? {

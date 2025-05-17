@@ -15,6 +15,7 @@ final class StatisticController: UIViewController {
         let label = UILabel()
         label.text = "Анализировать пока нечего"
         label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
+        label.textColor = .forText
         label.translatesAutoresizingMaskIntoConstraints = false
         label.isHidden = true
         return label
@@ -41,7 +42,7 @@ final class StatisticController: UIViewController {
         
         let titleLabel = UILabel()
         titleLabel.text = "Статистика"
-        titleLabel.textColor = .black
+        titleLabel.textColor = .forText
         titleLabel.font = UIFont.systemFont(ofSize: 34, weight: .bold)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(titleLabel)
@@ -93,14 +94,14 @@ final class StatisticController: UIViewController {
         
         numberLabel.text = "0"
         numberLabel.font = UIFont.systemFont(ofSize: 34, weight: .bold)
-        numberLabel.textColor = .black
+        numberLabel.textColor = .forText
         numberLabel.translatesAutoresizingMaskIntoConstraints = false
         card.addSubview(numberLabel)
         
         let subtitleLabel = UILabel()
         subtitleLabel.text = "Трекеров завершено"
         subtitleLabel.font = UIFont.systemFont(ofSize: 12, weight: .medium)
-        subtitleLabel.textColor = .black
+        subtitleLabel.textColor = .forText
         subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
         card.addSubview(subtitleLabel)
         
@@ -125,6 +126,8 @@ final class StatisticController: UIViewController {
             cryLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             cryLabel.topAnchor.constraint(equalTo: cryImage.bottomAnchor, constant: 8)
         ])
+        
+        updateStatistic()
     }
     
     override func viewDidLayoutSubviews() {

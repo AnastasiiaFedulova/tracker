@@ -51,7 +51,7 @@ final class FiltrController: UIViewController, UITableViewDataSource, UITableVie
         let titleLabel = UILabel()
         titleLabel.text = "Фильтры"
         titleLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
-        titleLabel.textColor = .black
+        titleLabel.textColor = .forText
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(titleLabel)
         
@@ -93,7 +93,7 @@ final class FiltrController: UIViewController, UITableViewDataSource, UITableVie
         
         cell.textLabel?.text = options[indexPath.row]
         cell.textLabel?.font = UIFont.systemFont(ofSize: 17)
-        cell.textLabel?.textColor = .black
+        cell.textLabel?.textColor = .forText
         cell.backgroundColor = .clear
         cell.selectionStyle = .none
         
