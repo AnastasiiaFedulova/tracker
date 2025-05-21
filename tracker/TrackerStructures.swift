@@ -4,7 +4,6 @@
 //
 //  Created by Anastasiia on 26.02.2025.
 //
-
 import UIKit
 
 struct Tracker{
@@ -44,6 +43,20 @@ enum Weekday: String, Codable, CaseIterable {
         case .Friday: return "Пт"
         case .Saturday: return "Сб"
         case .Sunday: return "Вс"
+        }
+    }
+}
+extension Weekday {
+    init?(calendarWeekday: Int) {
+        switch calendarWeekday {
+        case 1: self = .Sunday
+        case 2: self = .Monday
+        case 3: self = .Tuesday
+        case 4: self = .Wednesday
+        case 5: self = .Thursday
+        case 6: self = .Friday
+        case 7: self = .Saturday
+        default: return nil
         }
     }
 }

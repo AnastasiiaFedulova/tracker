@@ -13,13 +13,14 @@ class OnboardingViewController: UIPageViewController {
     private lazy var pages: [OnboardingPageViewController] = {
         let first = OnboardingPageViewController(
             imageName: "backgrBlue",
-            text: "Отслеживайте только \n то, что хотите",
+            text: NSLocalizedString("onbording.firstTitle", comment: ""),
+            
             showButton: true
         )
         
         let second = OnboardingPageViewController(
             imageName: "backgrRed",
-            text: "Даже если это \n не литры воды и йога",
+            text: NSLocalizedString("onbording.secondTitle", comment: ""),
             showButton: true
         )
         
@@ -78,3 +79,4 @@ extension OnboardingViewController: UIPageViewControllerDataSource, UIPageViewCo
         }
     }
 }
+

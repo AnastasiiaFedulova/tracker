@@ -3,7 +3,6 @@
 //
 // Created by Anastasiia on 26.02.2025.
 //
-
 import UIKit
 
 final class NewIrregularEventController: UIViewController,UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
@@ -72,7 +71,8 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         
         let NewIrregularEventLabel = UILabel()
         NewIrregularEventLabel.textColor = .black
-        NewIrregularEventLabel.text = "Новое нерегулярное событие"
+        NewIrregularEventLabel.text = NSLocalizedString("irregular.title", comment: "")
+        
         NewIrregularEventLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         NewIrregularEventLabel.textAlignment = .center
         NewIrregularEventLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -84,7 +84,8 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
             NewIrregularEventLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 30)
         ])
         
-        name.placeholder = "Введите название трекера"
+        name.placeholder = NSLocalizedString("newHabbbit.name", comment: "")
+        
         name.textColor = .black
         name.backgroundColor = .gr
         name.layer.cornerRadius = 16
@@ -128,7 +129,8 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         categoriesTopConstraint = categories.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 27)
         categoriesTopConstraintSmall = categories.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 15)
         
-        categories.text = "Категория"
+        categories.text = NSLocalizedString("newHabbit.category", comment: "")
+        
         categories.textColor = .forText
         categories.font = UIFont.systemFont(ofSize: 17, weight: .regular)
         categories.translatesAutoresizingMaskIntoConstraints = false
@@ -151,7 +153,8 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         ])
         
         let emojiLabel = UILabel()
-        emojiLabel.text = "Emoji"
+        emojiLabel.text = NSLocalizedString("emoji", comment: "")
+        
         emojiLabel.textColor = .black
         emojiLabel.font = UIFont.systemFont(ofSize: 19, weight: .bold)
         emojiLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -183,7 +186,6 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         contentView.addSubview(emojiCollectionView)
         emojiCollectionView.setContentHuggingPriority(.required, for: .vertical)
         
-        
         NSLayoutConstraint.activate([
             emojiCollectionView.topAnchor.constraint(equalTo: emojiLabel.bottomAnchor, constant: 20),
             emojiCollectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
@@ -214,7 +216,8 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         ])
         
         let color = UILabel()
-        color.text = "Цвет"
+        color.text = NSLocalizedString("color", comment: "")
+        
         color.textColor = .black
         color.font = UIFont.systemFont(ofSize: 19, weight: .bold)
         color.translatesAutoresizingMaskIntoConstraints = false
@@ -229,7 +232,8 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         ])
         
         let cancellButton = UIButton(type: .system)
-        cancellButton.setTitle("Отменить", for: .normal)
+        cancellButton.setTitle(NSLocalizedString("cancell", comment: ""), for: .normal)
+        
         cancellButton.setTitleColor(.button, for: .normal)
         cancellButton.backgroundColor = .white
         cancellButton.layer.borderWidth = 1
@@ -253,7 +257,8 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
         scrollView.contentSize = CGSize(width: view.frame.width, height: 1000)
         scrollView.showsVerticalScrollIndicator = true
         
-        createButton.setTitle("Создать", for: .normal)
+        createButton.setTitle(NSLocalizedString("create", comment: ""), for: .normal)
+        
         createButton.setTitleColor(.white, for: .normal)
         createButton.backgroundColor = .greyButton
         
@@ -315,7 +320,7 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        textField.resignFirstResponder() // клавиатура закрытие
+        textField.resignFirstResponder()
         return true
     }
     
@@ -361,7 +366,6 @@ final class NewIrregularEventController: UIViewController,UICollectionViewDataSo
             present(categoriesController, animated: true)
         }
     }
-    
 }
 
 extension NewIrregularEventController {
@@ -420,7 +424,6 @@ extension NewIrregularEventController {
             outerView.backgroundColor = color
             cell.contentView.addSubview(outerView)
             
-            // Белая полоска
             let middleView = UIView()
             middleView.frame = CGRect(x: 0, y: 0, width: 46, height: 46)
             middleView.layer.cornerRadius = 8
@@ -429,7 +432,6 @@ extension NewIrregularEventController {
             middleView.translatesAutoresizingMaskIntoConstraints = false
             cell.contentView.addSubview(middleView)
             
-            // Внутренний цветной квадрат
             let innerView = UIView()
             innerView.frame = CGRect(x: 0, y: 0, width: 40, height: 40)
             innerView.layer.cornerRadius = 8
@@ -539,6 +541,7 @@ extension NewIrregularEventController {
         newTrackerCoreData.color = selectedColors
         newTrackerCoreData.emoji = selectedEmoji
         newTrackerCoreData.isCompleted = false
+        newTrackerCoreData.isPinned = false
         
         if let category = category {
             newTrackerCoreData.category = category
@@ -591,8 +594,6 @@ extension NewIrregularEventController {
             }
             targetVC = targetVC?.presentingViewController
         }
-        
-        print("Не удалось найти нужный ViewController")
         dismiss(animated: true)
     }
 }

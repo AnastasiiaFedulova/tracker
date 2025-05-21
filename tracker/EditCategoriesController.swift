@@ -4,7 +4,6 @@
 //
 //  Created by Anastasiia on 02.03.2025.
 //
-
 import UIKit
 
 final class EditCategoriesController: UIViewController, UITextFieldDelegate {
@@ -14,7 +13,7 @@ final class EditCategoriesController: UIViewController, UITextFieldDelegate {
     let name = UITextField()
     let categoriesServise = CategoriesServise.shared
     var onCategoryUpdated: (() -> Void)?
-
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,7 +25,8 @@ final class EditCategoriesController: UIViewController, UITextFieldDelegate {
         
         let editcategoriesLabel = UILabel()
         editcategoriesLabel.textColor = .black
-        editcategoriesLabel.text = "Редактирование категории"
+        editcategoriesLabel.text = NSLocalizedString("editCategory", comment: "")
+        
         editcategoriesLabel.font = .boldSystemFont(ofSize: 16)
         editcategoriesLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(editcategoriesLabel)
@@ -37,7 +37,8 @@ final class EditCategoriesController: UIViewController, UITextFieldDelegate {
         ])
         
         name.text = categoriesName
-        name.placeholder = "Введите название категории"
+        name.placeholder = NSLocalizedString("newCategory.name", comment: "")
+        
         name.borderStyle = .roundedRect
         name.textColor = .black
         name.backgroundColor = .gr
@@ -57,7 +58,8 @@ final class EditCategoriesController: UIViewController, UITextFieldDelegate {
         ])
         
         let doneButton = UIButton(type: .system)
-        doneButton.setTitle("Готово", for: .normal)
+        doneButton.setTitle(NSLocalizedString("done", comment: ""), for: .normal)
+        
         doneButton.setTitleColor(.white, for: .normal)
         doneButton.backgroundColor = .black
         doneButton.layer.cornerRadius = 16

@@ -35,20 +35,29 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         let trackersController = ViewController()
         trackersController.tabBarItem = UITabBarItem(
-            title: "Трекеры",
+            // title: "Трекеры",
+            title: NSLocalizedString("trecers.title", comment: ""),
             image: UIImage(named: "ic 28x28 1"),
             selectedImage: UIImage(named: "ic 28x28 1")
         )
         
-        let statisticsController = UIViewController()
+        let statisticsController = StatisticController()
         statisticsController.view.backgroundColor = .white
         statisticsController.tabBarItem = UITabBarItem(
-            title: "Статистика",
+            // title: "Статистика",
+            title: NSLocalizedString("tapbar.title", comment: ""),
             image: UIImage(named: "ic 28x28 2"),
             selectedImage: UIImage(named: "ic 28x28 3")
         )
         
         tabBarController.viewControllers = [trackersController, statisticsController]
+        
+        let tabBar = tabBarController.tabBar
+        let topBorder = UIView(frame: CGRect(x: 0, y: 0, width: tabBar.frame.width, height: 0.5))
+        topBorder.backgroundColor = .lightGray
+        topBorder.autoresizingMask = [.flexibleWidth, .flexibleBottomMargin]
+        tabBar.addSubview(topBorder)
+        
         return tabBarController
     }
 }
