@@ -620,6 +620,7 @@ extension NewHabitController {
         newTrackerCoreData.emoji = selectedEmoji
         newTrackerCoreData.calendar = calendarData as NSData
         newTrackerCoreData.isCompleted = isCompleted
+        newTrackerCoreData.isPinned = false
         
         if let category = category {
             newTrackerCoreData.category = category

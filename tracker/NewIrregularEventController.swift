@@ -541,6 +541,7 @@ extension NewIrregularEventController {
         newTrackerCoreData.color = selectedColors
         newTrackerCoreData.emoji = selectedEmoji
         newTrackerCoreData.isCompleted = false
+        newTrackerCoreData.isPinned = false
         
         if let category = category {
             newTrackerCoreData.category = category
